@@ -1,0 +1,26 @@
+package com.example.timi_api.application.dto.request;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import lombok.Data;
+
+import java.util.List;
+
+@Data
+public class CreateOrder {
+
+    @NotBlank
+    private String email;
+
+    @NotBlank
+    private String phone;
+
+    @NotBlank
+    private String address;
+
+    private Long accountId;
+
+    @NotEmpty
+    private List<@Valid CreateOrderItem> items;
+}
