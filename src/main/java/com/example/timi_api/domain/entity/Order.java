@@ -32,10 +32,15 @@ public class Order {
     private String email;
 
     @Column(nullable = false)
+    private String name;
+
+    @Column(nullable = false)
     private String phone;
 
     @Column(nullable = false)
     private String address;
+
+    private String note;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

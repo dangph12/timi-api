@@ -14,12 +14,17 @@ public class CreateOrder {
     private String email;
 
     @NotBlank
+    private String name;
+
+    @NotBlank
     private String phone;
 
     @NotBlank
     private String address;
 
     private Long accountId;
+
+    private String note;
 
     @NotEmpty
     private List<@Valid CreateOrderItem> items;

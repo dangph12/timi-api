@@ -45,6 +45,7 @@ public class OrderService {
                 .publicId(generatePublicId())
                 .account(account)
                 .email(request.getEmail())
+                .name(request.getName())
                 .phone(request.getPhone())
                 .address(request.getAddress())
                 .currentStatus(OrderStatus.PENDING)
