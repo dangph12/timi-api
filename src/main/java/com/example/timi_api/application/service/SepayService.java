@@ -8,8 +8,8 @@ import com.example.timi_api.domain.event.PaymentCompletedEvent;
 import com.example.timi_api.infrastructure.message.Message;
 import com.example.timi_api.infrastructure.repository.OrderRepository;
 import com.example.timi_api.infrastructure.repository.PaymentTransactionRepository;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,23 +41,24 @@ public class SepayService {
     private final ApplicationEventPublisher eventPublisher;
     private final ObjectMapper objectMapper;
 
-    public boolean verifySignature(String payload, String signature) {
+    public boolean verifySignature(String timestamp, String payload, String signature) {
         try {
+            String data = timestamp + "." + payload;
             Mac mac = Mac.getInstance("HmacSHA256");
             SecretKeySpec keySpec = new SecretKeySpec(secretKey.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
             mac.init(keySpec);
-            byte[] hmac = mac.doFinal(payload.getBytes(StandardCharsets.UTF_8));
+            byte[] hmac = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
             StringBuilder hexString = new StringBuilder();
             for (byte b : hmac) {
                 hexString.append(String.format("%02x", b));
             }
-            boolean valid = hexString.toString().equals(signature);
+            boolean valid = ("sha256=" + hexString).equals(signature);
             if (!valid) {
                 log.warn("Invalid Sepay signature");
             }
             return valid;
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
-            log.warn("Invalid Sepay signature");
+            log.warn("Invalid Sepay signature", e);
             return false;
         }
     }
@@ -67,11 +68,10 @@ public class SepayService {
         try {
             JsonNode root = objectMapper.readTree(payload);
 
-            String publicId = root.get("code").asText();
-            BigDecimal amount = new BigDecimal(root.get("transferAmount").asText());
             String referenceCode = root.get("referenceCode").asText();
+            BigDecimal amount = new BigDecimal(root.get("transferAmount").asText());
 
-            Order order = orderRepository.findByPublicId(publicId)
+            Order order = orderRepository.findByPublicId(referenceCode)
                     .orElseThrow(() -> new NoSuchElementException(Message.NOT_FOUND));
 
             if (order.getPaymentStatus() == PaymentStatus.PAID) {

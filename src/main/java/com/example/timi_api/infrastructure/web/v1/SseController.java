@@ -11,7 +11,7 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
-@RequestMapping("/api/sse")
+@RequestMapping("/sse")
 @RequiredArgsConstructor
 public class SseController {
 

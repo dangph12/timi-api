@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/webhooks")
+@RequestMapping("/webhooks")
 @RequiredArgsConstructor
 public class SepayWebhookController {
 
@@ -16,9 +16,10 @@ public class SepayWebhookController {
     @PostMapping("/sepay")
     public ResponseEntity<String> handleWebhook(
             @RequestBody String payload,
-            @RequestHeader("X-SePay-Signature") String signature) {
+            @RequestHeader("X-SePay-Signature") String signature,
+            @RequestHeader("X-SePay-Timestamp") String timestamp) {
 
-        if (!sepayService.verifySignature(payload, signature)) {
+        if (!sepayService.verifySignature(timestamp, payload, signature)) {
             return ResponseEntity.status(401).body(Message.INVALID_SIGNATURE);
         }
 
