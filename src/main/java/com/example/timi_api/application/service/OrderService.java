@@ -3,13 +3,18 @@ package com.example.timi_api.application.service;
 import com.example.timi_api.application.dto.request.CreateOrder;
 import com.example.timi_api.application.dto.request.CreateOrderItem;
 import com.example.timi_api.domain.constant.OrderStatus;
+import com.example.timi_api.domain.constant.PaymentMethod;
+import com.example.timi_api.domain.constant.PaymentStatus;
 import com.example.timi_api.domain.entity.*;
+import com.example.timi_api.domain.event.PaymentCompletedEvent;
 import com.example.timi_api.infrastructure.message.Message;
 import com.example.timi_api.infrastructure.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.NoSuchElementException;
@@ -25,6 +30,8 @@ public class OrderService {
     private final SkuRepository skuRepository;
     private final CharacterDesignRepository characterDesignRepository;
     private final AccountRepository accountRepository;
+    private final PaymentTransactionRepository paymentTransactionRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public Order createOrder(CreateOrder request) {
@@ -48,7 +55,10 @@ public class OrderService {
                 .name(request.getName())
                 .phone(request.getPhone())
                 .address(request.getAddress())
+                .note(request.getNote())
                 .currentStatus(OrderStatus.PENDING)
+                .paymentMethod(request.getPaymentMethod())
+                .paymentStatus(PaymentStatus.UNPAID)
                 .build());
 
         for (CreateOrderItem item : request.getItems()) {
@@ -71,6 +81,27 @@ public class OrderService {
                 .build());
 
         return order;
+    }
+
+    @Transactional
+    public void processPayment(Long orderId, String transactionReference, BigDecimal amount) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new NoSuchElementException(Message.NOT_FOUND));
+
+        order.setPaymentStatus(PaymentStatus.PAID);
+        orderRepository.save(order);
+
+        PaymentTransaction transaction = PaymentTransaction.builder()
+                .order(order)
+                .amount(amount)
+                .method(PaymentMethod.QR)
+                .status(PaymentStatus.PAID)
+                .transactionReference(transactionReference)
+                .createdAt(LocalDateTime.now())
+                .build();
+        paymentTransactionRepository.save(transaction);
+
+        eventPublisher.publishEvent(new PaymentCompletedEvent(this, order));
     }
 
     private String generatePublicId() {

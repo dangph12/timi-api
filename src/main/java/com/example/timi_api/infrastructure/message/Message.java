@@ -15,4 +15,6 @@ public final class Message {
     public static final String MUTEX_GROUP_CONFLICT = "Không thể chọn nhiều tùy chọn trong cùng nhóm: ";
     public static final String CHARACTER_DESIGN_CREATED = "Tạo thiết kế nhân vật thành công";
     public static final String ORDER_CREATED = "Tạo đơn hàng thành công";
+    public static final String PAYMENT_SUCCESS = "Thanh toán thành công";
+    public static final String INVALID_SIGNATURE = "Chữ ký không hợp lệ";
 }

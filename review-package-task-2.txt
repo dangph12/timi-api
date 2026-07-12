@@ -1,0 +1,5 @@
+﻿Commits: ac68b6a..3c729308bd52d5c1ca932da3ebe049f0a631cfd6
+
+ .../repository/PaymentTransactionRepository.java            | 13 +++++++++++++  1 file changed, 13 insertions(+)
+
+diff --git a/src/main/java/com/example/timi_api/infrastructure/repository/PaymentTransactionRepository.java b/src/main/java/com/example/timi_api/infrastructure/repository/PaymentTransactionRepository.java new file mode 100644 index 0000000..abc2133 --- /dev/null +++ b/src/main/java/com/example/timi_api/infrastructure/repository/PaymentTransactionRepository.java @@ -0,0 +1,13 @@ +package com.example.timi_api.infrastructure.repository; + +import com.example.timi_api.domain.entity.PaymentTransaction; +import org.springframework.data.jpa.repository.JpaRepository; +import org.springframework.stereotype.Repository; + +import java.util.List; + +@Repository +public interface PaymentTransactionRepository extends JpaRepository<PaymentTransaction, Long> { + +    List<PaymentTransaction> findByOrderId(Long orderId); +}
