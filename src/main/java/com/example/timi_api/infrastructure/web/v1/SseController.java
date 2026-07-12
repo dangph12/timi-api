@@ -28,6 +28,7 @@ public class SseController {
 
         emitter.onCompletion(() -> emitters.remove(publicId));
         emitter.onTimeout(() -> emitters.remove(publicId));
+        emitter.onError(e -> emitters.remove(publicId));
 
         return emitter;
     }

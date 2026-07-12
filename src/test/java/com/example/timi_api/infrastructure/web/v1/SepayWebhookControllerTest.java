@@ -1,6 +1,7 @@
 package com.example.timi_api.infrastructure.web.v1;
 
 import com.example.timi_api.application.service.SepayService;
+import com.example.timi_api.infrastructure.message.Message;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,7 +43,7 @@ class SepayWebhookControllerTest {
         var response = controller.handleWebhook("{\"code\":\"ORDER123\"}", "bad-sig");
 
         assertEquals(401, response.getStatusCode().value());
-        assertEquals("Invalid signature", response.getBody());
+        assertEquals(Message.INVALID_SIGNATURE, response.getBody());
         verify(sepayService, never()).handleCallback(anyString());
     }
 }

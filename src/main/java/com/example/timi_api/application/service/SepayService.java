@@ -11,6 +11,8 @@ import com.example.timi_api.infrastructure.repository.PaymentTransactionReposito
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -28,6 +30,8 @@ import java.util.NoSuchElementException;
 @Service
 @RequiredArgsConstructor
 public class SepayService {
+
+    private static final Logger log = LoggerFactory.getLogger(SepayService.class);
 
     @Value("${sepay.secret-key}")
     private String secretKey;
@@ -47,8 +51,13 @@ public class SepayService {
             for (byte b : hmac) {
                 hexString.append(String.format("%02x", b));
             }
-            return hexString.toString().equals(signature);
+            boolean valid = hexString.toString().equals(signature);
+            if (!valid) {
+                log.warn("Invalid Sepay signature");
+            }
+            return valid;
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
+            log.warn("Invalid Sepay signature");
             return false;
         }
     }
@@ -65,6 +74,10 @@ public class SepayService {
             Order order = orderRepository.findByPublicId(publicId)
                     .orElseThrow(() -> new NoSuchElementException(Message.NOT_FOUND));
 
+            if (order.getPaymentStatus() == PaymentStatus.PAID) {
+                return;
+            }
+
             order.setPaymentStatus(PaymentStatus.PAID);
             orderRepository.save(order);
 
@@ -80,6 +93,7 @@ public class SepayService {
 
             eventPublisher.publishEvent(new PaymentCompletedEvent(this, order));
         } catch (Exception e) {
+            log.error("Failed to process Sepay callback", e);
             throw new RuntimeException("Failed to process Sepay callback", e);
         }
     }
