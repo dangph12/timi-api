@@ -68,16 +68,18 @@ public class SepayService {
         try {
             JsonNode root = objectMapper.readTree(payload);
 
-            String referenceCode = root.get("referenceCode").asText();
+            String content = root.get("content").asText();
             BigDecimal amount = new BigDecimal(root.get("transferAmount").asText());
+            String referenceCode = root.get("referenceCode").asText();
 
-            Order order = orderRepository.findByPublicId(referenceCode)
+            Order order = orderRepository.findByPublicId(content)
                     .orElseThrow(() -> new NoSuchElementException(Message.NOT_FOUND));
 
             if (order.getPaymentStatus() == PaymentStatus.PAID) {
                 return;
             }
 
+            order.setPaymentMethod(PaymentMethod.QR);
             order.setPaymentStatus(PaymentStatus.PAID);
             orderRepository.save(order);
 
