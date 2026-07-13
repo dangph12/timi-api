@@ -18,6 +18,5 @@ public final class Message {
     public static final String PAYMENT_SUCCESS = "Thanh toán thành công";
     public static final String INVALID_SIGNATURE = "Chữ ký không hợp lệ";
     public static final String EMAIL_ORDER_CONFIRM_SUBJECT = "Xác nhận đơn hàng #";
-    public static final String EMAIL_COD_INTRO = "Đơn hàng của bạn đã được tiếp nhận. Bạn sẽ thanh toán khi nhận hàng.";
-    public static final String EMAIL_QR_INTRO = "Cảm ơn bạn đã thanh toán. Đơn hàng của bạn đã được xác nhận.";
+    public static final String EMAIL_CONFIRM_INTRO = "Cảm ơn bạn đã đặt hàng! Đơn hàng của bạn đã được tiếp nhận.";
 }

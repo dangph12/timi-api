@@ -1,10 +1,10 @@
 package com.example.timi_api.domain.constant;
 
 public enum OrderStatus {
-    PENDING,
-    CONFIRMED,
-    PROCESSING,
+    UNPAID,
+    READY_TO_SHIP,
+    PROCESSED,
     SHIPPED,
-    DELIVERED,
+    COMPLETED,
     CANCELLED
 }

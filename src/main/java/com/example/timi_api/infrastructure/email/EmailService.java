@@ -1,6 +1,5 @@
 package com.example.timi_api.infrastructure.email;
 
-import com.example.timi_api.domain.constant.PaymentMethod;
 import com.example.timi_api.domain.entity.Order;
 import com.example.timi_api.domain.entity.OrderItem;
 import com.example.timi_api.infrastructure.message.Message;
@@ -49,14 +48,6 @@ public class EmailService {
     }
 
     private String render(Order order) {
-        String intro = order.getPaymentMethod() == PaymentMethod.COD
-                ? Message.EMAIL_COD_INTRO
-                : Message.EMAIL_QR_INTRO;
-
-        String paymentMethodText = order.getPaymentMethod() == PaymentMethod.COD
-                ? "Thanh toán khi nhận hàng (COD)"
-                : "Chuyển khoản ngân hàng - Đã thanh toán";
-
         BigDecimal total = BigDecimal.ZERO;
         List<Map<String, Object>> items = new ArrayList<>();
         for (OrderItem item : order.getItems()) {
@@ -66,20 +57,20 @@ public class EmailService {
             itemMap.put("skuCode", item.getSku().getSkuCode());
             itemMap.put("sizeName", item.getSku().getSize().getName());
             itemMap.put("quantity", item.getQuantity());
+            itemMap.put("imageUrl", item.getCharacterDesign().getImageUrl());
             itemMap.put("price", formatPrice(item.getPriceAtPurchase()));
             itemMap.put("subtotal", formatPrice(subtotal));
             items.add(itemMap);
         }
 
         Map<String, Object> ctx = new HashMap<>();
-        ctx.put("intro", intro);
+        ctx.put("intro", Message.EMAIL_CONFIRM_INTRO);
         ctx.put("publicId", order.getPublicId());
         ctx.put("name", order.getName());
         ctx.put("phone", order.getPhone());
         ctx.put("address", order.getAddress());
         ctx.put("items", items);
         ctx.put("total", formatPrice(total));
-        ctx.put("paymentMethodText", paymentMethodText);
 
         return mustache.loadTemplate("email/order-confirmation").execute(ctx);
     }

@@ -2,7 +2,6 @@ package com.example.timi_api.domain.entity;
 
 import com.example.timi_api.domain.constant.OrderStatus;
 import com.example.timi_api.domain.constant.PaymentMethod;
-import com.example.timi_api.domain.constant.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -50,10 +49,6 @@ public class Order {
 
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
-
-    @Enumerated(EnumType.STRING)
-    @Builder.Default
-    private PaymentStatus paymentStatus = PaymentStatus.UNPAID;
 
     @OneToMany(mappedBy = "order")
     @Builder.Default

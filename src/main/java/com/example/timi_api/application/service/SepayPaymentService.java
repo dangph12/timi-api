@@ -29,9 +29,9 @@ import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
-public class SepayService {
+public class SepayPaymentService {
 
-    private static final Logger log = LoggerFactory.getLogger(SepayService.class);
+    private static final Logger log = LoggerFactory.getLogger(SepayPaymentService.class);
 
     @Value("${sepay.secret-key}")
     private String secretKey;
@@ -75,12 +75,11 @@ public class SepayService {
             Order order = orderRepository.findByPublicId(content)
                     .orElseThrow(() -> new NoSuchElementException(Message.NOT_FOUND));
 
-            if (order.getPaymentStatus() == PaymentStatus.PAID) {
+            if (paymentTransactionRepository.existsByOrderAndStatus(order, PaymentStatus.PAID)) {
                 return;
             }
 
             order.setPaymentMethod(PaymentMethod.QR);
-            order.setPaymentStatus(PaymentStatus.PAID);
             orderRepository.save(order);
 
             PaymentTransaction transaction = PaymentTransaction.builder()

@@ -34,7 +34,10 @@
     </tr>
     {{#items}}
         <tr>
-            <td>{{skuCode}}</td>
+            <td>
+                <img src="{{imageUrl}}" alt="{{skuCode}}" width="60" height="60" style="vertical-align:middle;object-fit:cover;margin-right:8px">
+                {{skuCode}}
+            </td>
             <td>{{sizeName}}</td>
             <td style="text-align:center">{{quantity}}</td>
             <td style="text-align:right">{{price}}₫</td>
@@ -43,8 +46,6 @@
     {{/items}}
 </table>
 <p style="font-size:16px;font-weight:bold">Tổng cộng: {{total}}₫</p>
-<h3>Phương thức thanh toán</h3>
-<p>{{paymentMethodText}}</p>
 <br>
 <p>Trân trọng,<br>Đội ngũ Timi</p>
 </body>
