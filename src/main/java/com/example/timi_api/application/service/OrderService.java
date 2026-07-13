@@ -20,6 +20,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -142,6 +143,37 @@ public class OrderService {
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
         int random = ThreadLocalRandom.current().nextInt(1000, 10000);
         return timestamp + random;
+    }
+
+    @Transactional
+    public Order cancelOrder(String publicId) {
+        Order order = orderRepository.findByPublicId(publicId)
+                .orElseThrow(() -> new NoSuchElementException(Message.NOT_FOUND));
+
+        if (order.getCurrentStatus() == OrderStatus.COMPLETED
+                || order.getCurrentStatus() == OrderStatus.CANCELLED) {
+            throw new IllegalArgumentException("Không thể hủy đơn hàng này");
+        }
+
+        List<OrderItem> items = orderItemRepository.findByOrderId(order.getId());
+        List<CharacterDesign> designs = items.stream()
+                .map(OrderItem::getCharacterDesign)
+                .toList();
+
+        orderItemRepository.deleteAll(items);
+        characterDesignRepository.deleteAll(designs);
+
+        order.setCurrentStatus(OrderStatus.CANCELLED);
+        orderRepository.save(order);
+
+        orderStatusHistoryRepository.save(OrderStatusHistory.builder()
+                .order(order)
+                .status(OrderStatus.CANCELLED)
+                .note("Khách hàng hủy")
+                .createdAt(LocalDateTime.now())
+                .build());
+
+        return order;
     }
 
     private BigDecimal calculateTotal(Order order) {

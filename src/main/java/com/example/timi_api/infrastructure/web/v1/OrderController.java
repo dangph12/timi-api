@@ -25,6 +25,12 @@ public class OrderController {
                 .body(ApiResponse.success(Message.ORDER_CREATED, order));
     }
 
+    @PostMapping("/{publicId}/cancel")
+    public ResponseEntity<ApiResponse<Order>> cancelOrder(@PathVariable String publicId) {
+        Order order = orderService.cancelOrder(publicId);
+        return ResponseEntity.ok(ApiResponse.success("Đã hủy đơn hàng", order));
+    }
+
     @PostMapping("/{publicId}/confirm-payment")
     public ResponseEntity<ApiResponse<Order>> confirmCodPayment(@PathVariable String publicId) {
         Order order = orderService.markCodAsPaid(publicId);
