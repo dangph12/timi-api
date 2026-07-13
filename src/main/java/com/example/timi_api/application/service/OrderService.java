@@ -2,6 +2,11 @@ package com.example.timi_api.application.service;
 
 import com.example.timi_api.application.dto.request.CreateOrder;
 import com.example.timi_api.application.dto.request.CreateOrderItem;
+import com.example.timi_api.application.dto.response.CharacterDesignResponse;
+import com.example.timi_api.application.dto.response.OrderItemResponse;
+import com.example.timi_api.application.dto.response.OrderResponse;
+import com.example.timi_api.application.dto.response.OrderStatusHistoryResponse;
+import com.example.timi_api.application.dto.response.SkuResponse;
 import com.example.timi_api.domain.constant.OrderStatus;
 import com.example.timi_api.domain.constant.PaymentMethod;
 import com.example.timi_api.domain.constant.PaymentStatus;
@@ -35,7 +40,7 @@ public class OrderService {
     private final EmailService emailService;
 
     @Transactional
-    public Order createOrder(CreateOrder request) {
+    public OrderResponse createOrder(CreateOrder request) {
         for (CreateOrderItem item : request.getItems()) {
             skuRepository.findById(item.getSkuId())
                     .orElseThrow(() -> new NoSuchElementException(Message.SKU_NOT_FOUND + item.getSkuId()));
@@ -61,6 +66,7 @@ public class OrderService {
                 .note(request.getNote())
                 .currentStatus(initialStatus)
                 .currentPaymentStatus(PaymentStatus.PENDING)
+                .totalAmount(BigDecimal.ZERO)
                 .build());
 
         BigDecimal total = BigDecimal.ZERO;
@@ -70,13 +76,14 @@ public class OrderService {
             BigDecimal price = sku.getPrice();
             total = total.add(price.multiply(BigDecimal.valueOf(item.getQuantity())));
 
-            orderItemRepository.save(OrderItem.builder()
+            OrderItem savedItem = orderItemRepository.save(OrderItem.builder()
                     .order(order)
                     .sku(sku)
                     .characterDesign(design)
                     .quantity(item.getQuantity())
                     .priceAtPurchase(price)
                     .build());
+            order.getItems().add(savedItem);
         }
 
         order.setTotalAmount(total);
@@ -97,11 +104,11 @@ public class OrderService {
                 }
         );
 
-        return order;
+        return toOrderResponse(order);
     }
 
     @Transactional
-    public Order selectCodPayment(String publicId) {
+    public OrderResponse selectCodPayment(String publicId) {
         Order order = orderRepository.findByPublicId(publicId)
                 .orElseThrow(() -> new NoSuchElementException(Message.NOT_FOUND));
 
@@ -134,7 +141,7 @@ public class OrderService {
                 .createdAt(LocalDateTime.now())
                 .build());
 
-        return order;
+        return toOrderResponse(order);
     }
 
     private static final String CROCKFORD = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
@@ -153,7 +160,7 @@ public class OrderService {
     }
 
     @Transactional
-    public Order cancelOrder(String publicId) {
+    public OrderResponse cancelOrder(String publicId) {
         Order order = orderRepository.findByPublicId(publicId)
                 .orElseThrow(() -> new NoSuchElementException(Message.NOT_FOUND));
 
@@ -172,6 +179,38 @@ public class OrderService {
                 .createdAt(LocalDateTime.now())
                 .build());
 
-        return order;
+        return toOrderResponse(order);
+    }
+
+    private OrderResponse toOrderResponse(Order order) {
+        return OrderResponse.builder()
+                .publicId(order.getPublicId())
+                .account(order.getAccount())
+                .email(order.getEmail())
+                .name(order.getName())
+                .phone(order.getPhone())
+                .address(order.getAddress())
+                .note(order.getNote())
+                .totalAmount(order.getTotalAmount())
+                .createdAt(order.getCreatedAt())
+                .expiresAt(order.getExpiresAt())
+                .currentStatus(order.getCurrentStatus())
+                .currentPaymentStatus(order.getCurrentPaymentStatus())
+                .paymentMethod(order.getPaymentMethod())
+                .items(order.getItems().stream().map(this::toOrderItemResponse).toList())
+                .statusHistory(order.getStatusHistory().stream().map(this::toOrderStatusHistoryResponse).toList())
+                .build();
+    }
+
+    private OrderItemResponse toOrderItemResponse(OrderItem item) {
+        Sku sku = item.getSku();
+        SkuResponse skuResponse = new SkuResponse(sku.getId(), sku.getSkuCode(), sku.getCategory(), sku.getSize(), sku.getPrice(), sku.getQuantity());
+        CharacterDesign design = item.getCharacterDesign();
+        CharacterDesignResponse designResponse = new CharacterDesignResponse(design.getId(), design.getName(), design.getImageUrl());
+        return new OrderItemResponse(item.getId(), skuResponse, designResponse, item.getQuantity(), item.getPriceAtPurchase());
+    }
+
+    private OrderStatusHistoryResponse toOrderStatusHistoryResponse(OrderStatusHistory h) {
+        return new OrderStatusHistoryResponse(h.getId(), h.getStatus(), h.getCreatedAt(), h.getNote());
     }
 }
