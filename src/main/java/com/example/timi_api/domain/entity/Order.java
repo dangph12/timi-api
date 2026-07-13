@@ -2,9 +2,12 @@ package com.example.timi_api.domain.entity;
 
 import com.example.timi_api.domain.constant.OrderStatus;
 import com.example.timi_api.domain.constant.PaymentMethod;
+import com.example.timi_api.domain.constant.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,9 +46,19 @@ public class Order {
 
     private String note;
 
+    @Column(nullable = false)
+    private BigDecimal totalAmount;
+
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OrderStatus currentStatus;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PaymentStatus currentPaymentStatus;
 
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
@@ -62,4 +75,15 @@ public class Order {
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private List<OrderStatusHistory> statusHistory = new ArrayList<>();
+
+    @PrePersist
+    public void prePersist() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+    }
+
+    public LocalDateTime getExpiresAt() {
+        return createdAt != null ? createdAt.plusMinutes(10) : null;
+    }
 }

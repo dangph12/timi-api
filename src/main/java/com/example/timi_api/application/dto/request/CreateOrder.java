@@ -1,6 +1,5 @@
 package com.example.timi_api.application.dto.request;
 
-import com.example.timi_api.domain.constant.PaymentMethod;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -26,8 +25,6 @@ public class CreateOrder {
     private Long accountId;
 
     private String note;
-
-    private PaymentMethod paymentMethod;
 
     @NotEmpty
     private List<@Valid CreateOrderItem> items;
