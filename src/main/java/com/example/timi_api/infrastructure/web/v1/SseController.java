@@ -1,5 +1,6 @@
 package com.example.timi_api.infrastructure.web.v1;
 
+import com.example.timi_api.domain.entity.Order;
 import com.example.timi_api.infrastructure.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -20,15 +21,23 @@ public class SseController {
 
     @GetMapping(value = "/orders/{publicId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter subscribe(@PathVariable String publicId) {
-        orderRepository.findByPublicId(publicId)
+        Order order = orderRepository.findByPublicId(publicId)
                 .orElseThrow(() -> new NoSuchElementException("Order not found"));
 
-        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
+        SseEmitter emitter = new SseEmitter(600000L);
         emitters.put(publicId, emitter);
 
         emitter.onCompletion(() -> emitters.remove(publicId));
         emitter.onTimeout(() -> emitters.remove(publicId));
         emitter.onError(e -> emitters.remove(publicId));
+
+        try {
+            emitter.send(SseEmitter.event()
+                    .name("payment-status")
+                    .data("{\"status\":\"" + order.getCurrentPaymentStatus() + "\"}"));
+        } catch (Exception e) {
+            emitters.remove(publicId);
+        }
 
         return emitter;
     }
