@@ -33,7 +33,7 @@ public class OrderController {
 
     @PostMapping("/{publicId}/confirm-payment")
     public ResponseEntity<ApiResponse<Order>> confirmCodPayment(@PathVariable String publicId) {
-        Order order = orderService.markCodAsPaid(publicId);
+        Order order = orderService.selectCodPayment(publicId);
         return ResponseEntity.ok(ApiResponse.success(Message.PAYMENT_SUCCESS, order));
     }
 }

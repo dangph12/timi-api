@@ -37,6 +37,7 @@ public class PaymentTransaction {
     @Column(nullable = false)
     private PaymentStatus status;
 
+    @Column(unique = true)
     private String transactionReference;
 
     @Column(nullable = false)

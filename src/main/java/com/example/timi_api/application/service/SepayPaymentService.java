@@ -2,11 +2,13 @@ package com.example.timi_api.application.service;
 
 import com.example.timi_api.domain.constant.PaymentMethod;
 import com.example.timi_api.domain.constant.PaymentStatus;
+import com.example.timi_api.domain.constant.OrderStatus;
 import com.example.timi_api.domain.entity.Order;
+import com.example.timi_api.domain.entity.OrderStatusHistory;
 import com.example.timi_api.domain.entity.PaymentTransaction;
 import com.example.timi_api.domain.event.PaymentCompletedEvent;
-import com.example.timi_api.infrastructure.message.Message;
 import com.example.timi_api.infrastructure.repository.OrderRepository;
+import com.example.timi_api.infrastructure.repository.OrderStatusHistoryRepository;
 import com.example.timi_api.infrastructure.repository.PaymentTransactionRepository;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -15,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +28,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
-import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +41,7 @@ public class SepayPaymentService {
 
     private final OrderRepository orderRepository;
     private final PaymentTransactionRepository paymentTransactionRepository;
+    private final OrderStatusHistoryRepository orderStatusHistoryRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final ObjectMapper objectMapper;
 
@@ -72,14 +76,34 @@ public class SepayPaymentService {
             BigDecimal amount = new BigDecimal(root.get("transferAmount").asText());
             String referenceCode = root.get("referenceCode").asText();
 
-            Order order = orderRepository.findByPublicId(content)
-                    .orElseThrow(() -> new NoSuchElementException(Message.NOT_FOUND));
+            Optional<Order> orderOpt = orderRepository.findByPublicId(content);
+            if (orderOpt.isEmpty()) {
+                log.warn("No order found for content: {}", content);
+                return;
+            }
+
+            Order order = orderOpt.get();
 
             if (paymentTransactionRepository.existsByOrderAndStatus(order, PaymentStatus.PAID)) {
                 return;
             }
 
+            if (!amount.equals(order.getTotalAmount())) {
+                log.warn("Amount mismatch for order {}: expected {}, got {}", content, order.getTotalAmount(), amount);
+                return;
+            }
+
             order.setPaymentMethod(PaymentMethod.QR);
+            order.setCurrentPaymentStatus(PaymentStatus.PAID);
+            if (order.getCurrentStatus() == OrderStatus.CREATED) {
+                order.setCurrentStatus(OrderStatus.PROCESSING);
+                orderStatusHistoryRepository.save(OrderStatusHistory.builder()
+                        .order(order)
+                        .status(OrderStatus.PROCESSING)
+                        .note("QR - đã thanh toán")
+                        .createdAt(LocalDateTime.now())
+                        .build());
+            }
             orderRepository.save(order);
 
             PaymentTransaction transaction = PaymentTransaction.builder()
@@ -93,9 +117,10 @@ public class SepayPaymentService {
             paymentTransactionRepository.save(transaction);
 
             eventPublisher.publishEvent(new PaymentCompletedEvent(this, order));
+        } catch (DataIntegrityViolationException e) {
+            log.warn("Duplicate transaction reference, skipping", e);
         } catch (Exception e) {
             log.error("Failed to process Sepay callback", e);
-            throw new RuntimeException("Failed to process Sepay callback", e);
         }
     }
 }
