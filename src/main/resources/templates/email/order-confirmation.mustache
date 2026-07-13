@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body style="font-family:Arial,sans-serif;padding:20px">
+<h2>Cảm ơn bạn đã đặt hàng!</h2>
+<p>{{intro}}</p>
+<h3>Thông tin đơn hàng</h3>
+<p>Mã đơn hàng: <strong>{{publicId}}</strong></p>
+<h3>Thông tin khách hàng</h3>
+<table style="border:none">
+    <tr>
+        <td style="padding:2px 10px 2px 0">Họ tên:</td>
+        <td>{{name}}</td>
+    </tr>
+    <tr>
+        <td style="padding:2px 10px 2px 0">SĐT:</td>
+        <td>{{phone}}</td>
+    </tr>
+    <tr>
+        <td style="padding:2px 10px 2px 0">Địa chỉ:</td>
+        <td>{{address}}</td>
+    </tr>
+</table>
+<h3>Sản phẩm</h3>
+<table border="1" cellpadding="8" cellspacing="0" style="border-collapse:collapse;width:100%">
+    <tr style="background:#f5f5f5">
+        <th>Sản phẩm</th>
+        <th>Kích thước</th>
+        <th>SL</th>
+        <th>Đơn giá</th>
+        <th>Thành tiền</th>
+    </tr>
+    {{#items}}
+        <tr>
+            <td>{{skuCode}}</td>
+            <td>{{sizeName}}</td>
+            <td style="text-align:center">{{quantity}}</td>
+            <td style="text-align:right">{{price}}₫</td>
+            <td style="text-align:right">{{subtotal}}₫</td>
+        </tr>
+    {{/items}}
+</table>
+<p style="font-size:16px;font-weight:bold">Tổng cộng: {{total}}₫</p>
+<h3>Phương thức thanh toán</h3>
+<p>{{paymentMethodText}}</p>
+<br>
+<p>Trân trọng,<br>Đội ngũ Timi</p>
+</body>
+</html>
