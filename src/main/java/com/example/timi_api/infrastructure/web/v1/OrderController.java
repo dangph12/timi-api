@@ -18,6 +18,12 @@ public class OrderController {
 
     private final OrderService orderService;
 
+    @GetMapping("/{publicId}")
+    public ResponseEntity<ApiResponse<OrderResponse>> getOrder(@PathVariable String publicId) {
+        OrderResponse order = orderService.getOrderByPublicId(publicId);
+        return ResponseEntity.ok(ApiResponse.success("success", order));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<OrderResponse>> createOrder(@Valid @RequestBody CreateOrder request) {
         OrderResponse order = orderService.createOrder(request);

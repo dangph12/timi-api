@@ -118,7 +118,7 @@ public class OrderService {
         }
 
         if (paymentTransactionRepository.existsByOrderAndStatus(order, PaymentStatus.PENDING)) {
-            throw new IllegalArgumentException("Đã có giao dịch COD đang chờ xử lý");
+            return toOrderResponse(order);
         }
 
         order.setPaymentMethod(PaymentMethod.COD);
@@ -157,6 +157,12 @@ public class OrderService {
             id = sb.toString();
         } while (orderRepository.existsByPublicId(id));
         return id;
+    }
+
+    public OrderResponse getOrderByPublicId(String publicId) {
+        Order order = orderRepository.findByPublicId(publicId)
+                .orElseThrow(() -> new NoSuchElementException(Message.NOT_FOUND));
+        return toOrderResponse(order);
     }
 
     @Transactional
