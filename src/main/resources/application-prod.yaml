@@ -5,6 +5,11 @@ spring:
         format_sql: false
         show_sql: false
 
+management:
+  health:
+    mail:
+      enabled: false
+
 logging:
   level:
     root: info
