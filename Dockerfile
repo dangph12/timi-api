@@ -8,5 +8,6 @@ RUN chmod +x gradlew && ./gradlew bootJar --no-daemon
 FROM eclipse-temurin:21-jre
 WORKDIR /app
 COPY --from=build /app/build/libs/*.jar app.jar
+ENV TZ=Asia/Ho_Chi_Minh
 EXPOSE 8080
-CMD ["java", "-jar", "app.jar"]
+CMD ["java", "-Duser.timezone=Asia/Ho_Chi_Minh", "-jar", "app.jar"]
