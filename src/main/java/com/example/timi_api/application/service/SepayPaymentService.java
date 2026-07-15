@@ -17,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -76,7 +75,7 @@ public class SepayPaymentService {
             BigDecimal amount = new BigDecimal(root.get("transferAmount").asText());
             String referenceCode = root.get("referenceCode").asText();
 
-            Optional<Order> orderOpt = orderRepository.findByPublicId(content);
+            Optional<Order> orderOpt = orderRepository.findByPublicIdForUpdate(content);
             if (orderOpt.isEmpty()) {
                 log.warn("No order found for content: {}", content);
                 return;
@@ -88,7 +87,12 @@ public class SepayPaymentService {
                 return;
             }
 
-            if (!amount.equals(order.getTotalAmount())) {
+            if (paymentTransactionRepository.existsByTransactionReference(referenceCode)) {
+                log.warn("Duplicate transaction reference {}, skipping", referenceCode);
+                return;
+            }
+
+            if (amount.compareTo(order.getTotalAmount()) != 0) {
                 log.warn("Amount mismatch for order {}: expected {}, got {}", content, order.getTotalAmount(), amount);
                 return;
             }
@@ -117,8 +121,6 @@ public class SepayPaymentService {
             paymentTransactionRepository.save(transaction);
 
             eventPublisher.publishEvent(new PaymentCompletedEvent(this, order));
-        } catch (DataIntegrityViolationException e) {
-            log.warn("Duplicate transaction reference, skipping", e);
         } catch (Exception e) {
             log.error("Failed to process Sepay callback", e);
         }
