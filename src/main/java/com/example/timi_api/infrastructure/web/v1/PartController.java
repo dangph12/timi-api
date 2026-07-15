@@ -4,6 +4,7 @@ import com.example.timi_api.application.dto.response.PartOptionResponse;
 import com.example.timi_api.application.dto.response.PartResponse;
 import com.example.timi_api.application.service.PartService;
 import com.example.timi_api.infrastructure.common.ApiResponse;
+import com.example.timi_api.infrastructure.message.Message;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,7 +25,7 @@ public class PartController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<PartResponse>>> getAllParts() {
         List<PartResponse> parts = partService.getAllParts();
-        return ResponseEntity.ok(ApiResponse.success("success", parts));
+        return ResponseEntity.ok(ApiResponse.success(Message.LIST_PARTS_SUCCESS, parts));
     }
 
     @GetMapping("/{partId}/options")
@@ -32,6 +33,6 @@ public class PartController {
             @PathVariable Long partId,
             @RequestParam(required = false) Long styleId) {
         List<PartOptionResponse> options = partService.getPartOptions(partId, styleId);
-        return ResponseEntity.ok(ApiResponse.success("success", options));
+        return ResponseEntity.ok(ApiResponse.success(Message.LIST_PART_OPTIONS_SUCCESS, options));
     }
 }

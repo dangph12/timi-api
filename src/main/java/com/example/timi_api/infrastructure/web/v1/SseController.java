@@ -1,6 +1,7 @@
 package com.example.timi_api.infrastructure.web.v1;
 
 import com.example.timi_api.domain.entity.Order;
+import com.example.timi_api.infrastructure.message.Message;
 import com.example.timi_api.infrastructure.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -22,7 +23,7 @@ public class SseController {
     @GetMapping(value = "/orders/{publicId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter subscribe(@PathVariable String publicId) {
         Order order = orderRepository.findByPublicId(publicId)
-                .orElseThrow(() -> new NoSuchElementException("Order not found"));
+                .orElseThrow(() -> new NoSuchElementException(Message.ORDER_NOT_FOUND));
 
         SseEmitter emitter = new SseEmitter(600000L);
         emitters.put(publicId, emitter);

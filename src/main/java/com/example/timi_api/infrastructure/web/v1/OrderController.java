@@ -22,7 +22,7 @@ public class OrderController {
     @GetMapping("/{publicId}")
     public ResponseEntity<ApiResponse<OrderResponse>> getOrder(@PathVariable String publicId) {
         OrderResponse order = orderService.getOrderByPublicId(publicId);
-        return ResponseEntity.ok(ApiResponse.success("success", order));
+        return ResponseEntity.ok(ApiResponse.success(Message.GET_ORDER_SUCCESS, order));
     }
 
     @PostMapping
@@ -45,7 +45,7 @@ public class OrderController {
     @PostMapping("/{publicId}/cancel")
     public ResponseEntity<ApiResponse<OrderResponse>> cancelOrder(@PathVariable String publicId) {
         OrderResponse order = orderService.cancelOrder(publicId);
-        return ResponseEntity.ok(ApiResponse.success("Đã hủy đơn hàng", order));
+        return ResponseEntity.ok(ApiResponse.success(Message.ORDER_CANCELLED, order));
     }
 
     @PostMapping("/{publicId}/confirm-payment")
