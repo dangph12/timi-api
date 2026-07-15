@@ -7,6 +7,7 @@ import com.example.timi_api.infrastructure.common.ApiResponse;
 import com.example.timi_api.infrastructure.message.Message;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,8 +26,18 @@ public class OrderController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<OrderResponse>> createOrder(@Valid @RequestBody CreateOrder request) {
-        OrderResponse order = orderService.createOrder(request);
+    public ResponseEntity<ApiResponse<OrderResponse>> createOrder(
+            @Valid @RequestBody CreateOrder request,
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) {
+        OrderResponse order;
+        try {
+            order = orderService.createOrder(request, idempotencyKey);
+        } catch (DataIntegrityViolationException e) {
+            if (idempotencyKey == null) {
+                throw e;
+            }
+            order = orderService.getOrderByIdempotencyKey(idempotencyKey);
+        }
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(Message.ORDER_CREATED, order));
     }

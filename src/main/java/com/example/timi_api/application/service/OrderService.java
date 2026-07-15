@@ -24,6 +24,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
@@ -40,7 +41,14 @@ public class OrderService {
     private final EmailService emailService;
 
     @Transactional
-    public OrderResponse createOrder(CreateOrder request) {
+    public OrderResponse createOrder(CreateOrder request, String idempotencyKey) {
+        if (idempotencyKey != null) {
+            Optional<Order> existing = orderRepository.findByIdempotencyKey(idempotencyKey);
+            if (existing.isPresent()) {
+                return toOrderResponse(existing.get());
+            }
+        }
+
         for (CreateOrderItem item : request.getItems()) {
             skuRepository.findById(item.getSkuId())
                     .orElseThrow(() -> new NoSuchElementException(Message.SKU_NOT_FOUND + item.getSkuId()));
@@ -58,6 +66,7 @@ public class OrderService {
 
         Order order = orderRepository.save(Order.builder()
                 .publicId(generatePublicId())
+                .idempotencyKey(idempotencyKey)
                 .account(account)
                 .email(request.getEmail())
                 .name(request.getName())
@@ -161,6 +170,12 @@ public class OrderService {
 
     public OrderResponse getOrderByPublicId(String publicId) {
         Order order = orderRepository.findByPublicId(publicId)
+                .orElseThrow(() -> new NoSuchElementException(Message.NOT_FOUND));
+        return toOrderResponse(order);
+    }
+
+    public OrderResponse getOrderByIdempotencyKey(String idempotencyKey) {
+        Order order = orderRepository.findByIdempotencyKey(idempotencyKey)
                 .orElseThrow(() -> new NoSuchElementException(Message.NOT_FOUND));
         return toOrderResponse(order);
     }
