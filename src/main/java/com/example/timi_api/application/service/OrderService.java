@@ -169,7 +169,7 @@ public class OrderService {
     private String generatePublicId() {
         String id;
         do {
-            StringBuilder sb = new StringBuilder("TIMI-");
+            StringBuilder sb = new StringBuilder("TIMI");
             for (int i = 0; i < ID_LENGTH; i++) {
                 sb.append(CROCKFORD.charAt(ThreadLocalRandom.current().nextInt(CROCKFORD.length())));
             }
