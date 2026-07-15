@@ -40,6 +40,9 @@ public class PaymentTransaction {
     @Column(unique = true)
     private String transactionReference;
 
+    @Column(unique = true)
+    private String idempotencyKey;
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 

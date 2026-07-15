@@ -26,6 +26,9 @@ public class Order {
     @Column(nullable = false, unique = true)
     private String publicId;
 
+    @Column(unique = true)
+    private String idempotencyKey;
+
     @ManyToOne
     @JoinColumn(name = "account_id")
     @ToString.Exclude
