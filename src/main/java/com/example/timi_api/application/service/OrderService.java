@@ -117,13 +117,22 @@ public class OrderService {
     }
 
     @Transactional
-    public OrderResponse selectCodPayment(String publicId) {
-        Order order = orderRepository.findByPublicId(publicId)
+    public OrderResponse selectCodPayment(String publicId, String idempotencyKey) {
+        Order order = orderRepository.findByPublicIdForUpdate(publicId)
                 .orElseThrow(() -> new NoSuchElementException(Message.NOT_FOUND));
 
         if (order.getCurrentStatus() == OrderStatus.CANCELLED
                 || order.getCurrentStatus() == OrderStatus.COMPLETED) {
             throw new IllegalArgumentException("Không thể thanh toán đơn hàng này");
+        }
+
+        if (order.getCurrentPaymentStatus() == PaymentStatus.PAID) {
+            throw new IllegalArgumentException("Đơn hàng đã được thanh toán");
+        }
+
+        if (idempotencyKey != null
+                && paymentTransactionRepository.findByIdempotencyKey(idempotencyKey).isPresent()) {
+            return toOrderResponse(order);
         }
 
         if (paymentTransactionRepository.existsByOrderAndStatus(order, PaymentStatus.PENDING)) {
@@ -137,6 +146,7 @@ public class OrderService {
                 .amount(order.getTotalAmount())
                 .method(PaymentMethod.COD)
                 .status(PaymentStatus.PENDING)
+                .idempotencyKey(idempotencyKey)
                 .createdAt(LocalDateTime.now())
                 .build());
 

@@ -49,8 +49,15 @@ public class OrderController {
     }
 
     @PostMapping("/{publicId}/confirm-payment")
-    public ResponseEntity<ApiResponse<OrderResponse>> confirmCodPayment(@PathVariable String publicId) {
-        OrderResponse order = orderService.selectCodPayment(publicId);
+    public ResponseEntity<ApiResponse<OrderResponse>> confirmCodPayment(
+            @PathVariable String publicId,
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) {
+        OrderResponse order;
+        try {
+            order = orderService.selectCodPayment(publicId, idempotencyKey);
+        } catch (DataIntegrityViolationException e) {
+            order = orderService.getOrderByPublicId(publicId);
+        }
         return ResponseEntity.ok(ApiResponse.success(Message.PAYMENT_SUCCESS, order));
     }
 }
