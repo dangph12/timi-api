@@ -123,11 +123,11 @@ public class OrderService {
 
         if (order.getCurrentStatus() == OrderStatus.CANCELLED
                 || order.getCurrentStatus() == OrderStatus.COMPLETED) {
-            throw new IllegalArgumentException("Không thể thanh toán đơn hàng này");
+            throw new IllegalArgumentException(Message.CANNOT_PAY_ORDER);
         }
 
         if (order.getCurrentPaymentStatus() == PaymentStatus.PAID) {
-            throw new IllegalArgumentException("Đơn hàng đã được thanh toán");
+            throw new IllegalArgumentException(Message.ORDER_ALREADY_PAID);
         }
 
         if (idempotencyKey != null
@@ -156,7 +156,7 @@ public class OrderService {
         orderStatusHistoryRepository.save(OrderStatusHistory.builder()
                 .order(order)
                 .status(OrderStatus.PROCESSING)
-                .note("COD - chờ thanh toán khi nhận hàng")
+                .note(Message.COD_PAYMENT_NOTE)
                 .createdAt(LocalDateTime.now())
                 .build());
 
@@ -197,7 +197,7 @@ public class OrderService {
 
         if (order.getCurrentStatus() == OrderStatus.COMPLETED
                 || order.getCurrentStatus() == OrderStatus.CANCELLED) {
-            throw new IllegalArgumentException("Không thể hủy đơn hàng này");
+            throw new IllegalArgumentException(Message.CANNOT_CANCEL_ORDER);
         }
 
         order.setCurrentStatus(OrderStatus.CANCELLED);
@@ -206,7 +206,7 @@ public class OrderService {
         orderStatusHistoryRepository.save(OrderStatusHistory.builder()
                 .order(order)
                 .status(OrderStatus.CANCELLED)
-                .note("Khách hàng hủy")
+                .note(Message.CUSTOMER_CANCELLED_NOTE)
                 .createdAt(LocalDateTime.now())
                 .build());
 

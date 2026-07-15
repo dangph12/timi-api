@@ -9,6 +9,7 @@ import com.example.timi_api.domain.entity.PaymentTransaction;
 import com.example.timi_api.domain.event.PaymentCompletedEvent;
 import com.example.timi_api.infrastructure.repository.OrderRepository;
 import com.example.timi_api.infrastructure.repository.OrderStatusHistoryRepository;
+import com.example.timi_api.infrastructure.message.Message;
 import com.example.timi_api.infrastructure.repository.PaymentTransactionRepository;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -104,7 +105,7 @@ public class SepayPaymentService {
                 orderStatusHistoryRepository.save(OrderStatusHistory.builder()
                         .order(order)
                         .status(OrderStatus.PROCESSING)
-                        .note("QR - đã thanh toán")
+                        .note(Message.QR_PAID_NOTE)
                         .createdAt(LocalDateTime.now())
                         .build());
             }

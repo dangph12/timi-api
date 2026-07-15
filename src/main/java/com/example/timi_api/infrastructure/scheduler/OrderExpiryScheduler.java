@@ -4,6 +4,7 @@ import com.example.timi_api.domain.constant.OrderStatus;
 import com.example.timi_api.domain.constant.PaymentStatus;
 import com.example.timi_api.domain.entity.Order;
 import com.example.timi_api.domain.entity.OrderStatusHistory;
+import com.example.timi_api.infrastructure.message.Message;
 import com.example.timi_api.infrastructure.repository.OrderRepository;
 import com.example.timi_api.infrastructure.repository.OrderStatusHistoryRepository;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +40,7 @@ public class OrderExpiryScheduler {
                 orderStatusHistoryRepository.save(OrderStatusHistory.builder()
                         .order(order)
                         .status(OrderStatus.CANCELLED)
-                        .note("QR thanh toán hết hạn (10 phút)")
+                        .note(Message.QR_EXPIRED_NOTE)
                         .createdAt(LocalDateTime.now())
                         .build());
             }
