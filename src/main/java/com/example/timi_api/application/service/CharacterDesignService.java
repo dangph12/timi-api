@@ -22,12 +22,8 @@ public class CharacterDesignService {
     private final PartOptionRepository partOptionRepository;
     private final CharacterPartSelectionRepository characterPartSelectionRepository;
 
-//    @Value("${cloudinary.cloud-name}")
-//    private String cloudName;
-
     @Transactional
     public CharacterDesign createCharacterDesign(CreateCharacterDesign request) {
-//        validateImageUrl(request.getImageUrl());
 
         for (CreateCharacterPartSelection selection : request.getPartSelections()) {
             partOptionRepository.findById(selection.getPartOptionId())
@@ -47,10 +43,4 @@ public class CharacterDesignService {
         }
         return characterDesign;
     }
-
-//    private void validateImageUrl(String url) {
-//        if (!url.startsWith("https://res.cloudinary.com/" + cloudName + "/")) {
-//            throw new IllegalArgumentException(Message.INVALID_IMAGE_URL);
-//        }
-//    }
 }
