@@ -63,7 +63,7 @@ public class AuthService {
         RefreshToken stored = refreshTokenRepository.findByToken(refreshTokenValue)
                 .orElseThrow(() -> new IllegalArgumentException(Message.REFRESH_TOKEN_INVALID));
 
-        if (stored.isRevoked() || stored.getExpiresAt().isBefore(LocalDateTime.now())) {
+        if (stored.getExpiresAt().isBefore(LocalDateTime.now())) {
             throw new IllegalArgumentException(Message.REFRESH_TOKEN_INVALID);
         }
 
@@ -95,7 +95,6 @@ public class AuthService {
                 .token(refreshTokenValue)
                 .accountId(account.getId())
                 .expiresAt(LocalDateTime.now().plusDays(7))
-                .revoked(false)
                 .build();
         refreshTokenRepository.save(refreshTokenEntity);
 
@@ -111,7 +110,6 @@ public class AuthService {
                 .token(refreshTokenValue)
                 .accountId(accountId)
                 .expiresAt(LocalDateTime.now().plusDays(7))
-                .revoked(false)
                 .build();
         refreshTokenRepository.save(refreshTokenEntity);
 
