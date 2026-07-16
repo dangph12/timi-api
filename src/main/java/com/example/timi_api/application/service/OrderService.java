@@ -41,7 +41,7 @@ public class OrderService {
     private final EmailService emailService;
 
     @Transactional
-    public OrderResponse createOrder(CreateOrder request, String idempotencyKey) {
+    public OrderResponse createOrder(CreateOrder request, String idempotencyKey, Long accountId) {
         if (idempotencyKey != null) {
             Optional<Order> existing = orderRepository.findByIdempotencyKey(idempotencyKey);
             if (existing.isPresent()) {
@@ -56,11 +56,10 @@ public class OrderService {
                     .orElseThrow(() -> new NoSuchElementException(Message.DESIGN_NOT_FOUND + item.getCharacterDesignId()));
         }
 
-        Account account = null;
-        if (request.getAccountId() != null) {
-            account = accountRepository.findById(request.getAccountId())
-                    .orElseThrow(() -> new NoSuchElementException(Message.ACCOUNT_NOT_FOUND));
-        }
+        Account account = accountId != null
+                ? accountRepository.findById(accountId)
+                        .orElseThrow(() -> new NoSuchElementException(Message.ACCOUNT_NOT_FOUND))
+                : null;
 
         OrderStatus initialStatus = OrderStatus.CREATED;
 

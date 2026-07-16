@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -27,11 +28,12 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<OrderResponse>> createOrder(
+            @AuthenticationPrincipal Long accountId,
             @Valid @RequestBody CreateOrder request,
             @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) {
         OrderResponse order;
         try {
-            order = orderService.createOrder(request, idempotencyKey);
+            order = orderService.createOrder(request, idempotencyKey, accountId);
         } catch (DataIntegrityViolationException e) {
             if (idempotencyKey == null) {
                 throw e;
