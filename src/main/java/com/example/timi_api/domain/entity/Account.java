@@ -24,4 +24,7 @@ public class Account {
     private Role role;
 
     private String address;
+
+    @Column(nullable = false)
+    private String passwordHash;
 }
