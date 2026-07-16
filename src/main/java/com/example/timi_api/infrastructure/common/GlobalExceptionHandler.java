@@ -40,4 +40,16 @@ public class GlobalExceptionHandler {
                 .collect(Collectors.joining(", "));
         return ApiResponse.failed(errors);
     }
+
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ApiResponse<Void> handleAccessDenied(org.springframework.security.access.AccessDeniedException ex) {
+        return ApiResponse.failed(Message.FORBIDDEN);
+    }
+
+    @ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ApiResponse<Void> handleAuthentication(org.springframework.security.core.AuthenticationException ex) {
+        return ApiResponse.failed(Message.UNAUTHORIZED);
+    }
 }
