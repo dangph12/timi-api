@@ -60,4 +60,16 @@ public final class Message {
 
     // Validation — CreateCharacterPartSelection
     public static final String PART_OPTION_ID_NOT_NULL = "Mã tùy chọn bộ phận không được để trống";
+
+    // Auth
+    public static final String EMAIL_EXISTS = "Email đã được đăng ký";
+    public static final String REGISTER_SUCCESS = "Đăng ký thành công";
+    public static final String LOGIN_SUCCESS = "Đăng nhập thành công";
+    public static final String INVALID_CREDENTIALS = "Email hoặc mật khẩu không đúng";
+    public static final String REFRESH_TOKEN_INVALID = "Refresh token không hợp lệ hoặc đã hết hạn";
+    public static final String TOKEN_REFRESHED = "Token đã được làm mới";
+    public static final String AUTH_SUCCESS = "Xác thực thành công";
+    public static final String LOGOUT_SUCCESS = "Đăng xuất thành công";
+    public static final String UNAUTHORIZED = "Không có quyền truy cập";
+    public static final String FORBIDDEN = "Không có quyền thực hiện hành động này";
 }
