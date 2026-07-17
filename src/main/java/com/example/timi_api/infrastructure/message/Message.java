@@ -24,6 +24,7 @@ public final class Message {
     public static final String ORDER_CREATED = "Tạo đơn hàng thành công";
     public static final String ORDER_CANCELLED = "Đã hủy đơn hàng";
     public static final String GET_ORDER_SUCCESS = "Lấy đơn hàng thành công";
+    public static final String LIST_ORDERS_SUCCESS = "Lấy danh sách đơn hàng thành công";
     public static final String LIST_SKUS_SUCCESS = "Lấy danh sách SKU thành công";
     public static final String LIST_PARTS_SUCCESS = "Lấy danh sách bộ phận thành công";
     public static final String LIST_PART_OPTIONS_SUCCESS = "Lấy danh sách tùy chọn thành công";
@@ -62,6 +63,15 @@ public final class Message {
     // Validation — CreateCharacterPartSelection
     public static final String PART_OPTION_ID_NOT_NULL = "Mã tùy chọn bộ phận không được để trống";
 
+    // Cart
+    public static final String CART_ITEM_ADDED = "Thêm vào giỏ hàng thành công";
+    public static final String CART_ITEM_UPDATED = "Cập nhật giỏ hàng thành công";
+    public static final String CART_ITEM_REMOVED = "Xóa sản phẩm khỏi giỏ hàng thành công";
+    public static final String CART_GET_SUCCESS = "Lấy giỏ hàng thành công";
+    public static final String CHECKOUT_SUCCESS = "Đặt hàng thành công";
+    public static final String CART_ITEM_NOT_FOUND = "Không tìm thấy sản phẩm trong giỏ hàng";
+    public static final String CART_ITEMS_NOT_EMPTY = "Vui lòng chọn sản phẩm để thanh toán";
+
     // Auth
     public static final String EMAIL_EXISTS = "Email đã được đăng ký";
     public static final String REGISTER_SUCCESS = "Đăng ký thành công";
@@ -70,6 +80,7 @@ public final class Message {
     public static final String REFRESH_TOKEN_INVALID = "Refresh token không hợp lệ hoặc đã hết hạn";
     public static final String TOKEN_REFRESHED = "Token đã được làm mới";
     public static final String AUTH_SUCCESS = "Xác thực thành công";
+    public static final String PROFILE_UPDATED = "Cập nhật thông tin thành công";
     public static final String LOGOUT_SUCCESS = "Đăng xuất thành công";
     public static final String UNAUTHORIZED = "Không có quyền truy cập";
     public static final String FORBIDDEN = "Không có quyền thực hiện hành động này";

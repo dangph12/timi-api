@@ -2,13 +2,14 @@ package com.example.timi_api.infrastructure.web.v1;
 
 import com.example.timi_api.application.dto.request.LoginRequest;
 import com.example.timi_api.application.dto.request.RegisterRequest;
+import com.example.timi_api.application.dto.request.UpdateProfileRequest;
 import com.example.timi_api.application.dto.response.AuthResponse;
 import com.example.timi_api.application.service.AuthService;
 import com.example.timi_api.application.service.AuthService.AuthResult;
 import com.example.timi_api.infrastructure.common.ApiResponse;
 import com.example.timi_api.infrastructure.message.Message;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -24,24 +25,15 @@ import java.time.Duration;
 public class AuthController {
 
     private final AuthService authService;
-    private final boolean secureCookie;
 
-    public AuthController(AuthService authService,
-                          @Value("${app.secure-cookie:true}") boolean secureCookie) {
+    public AuthController(AuthService authService) {
         this.authService = authService;
-        this.secureCookie = secureCookie;
     }
 
     private ResponseCookie refreshCookie(String token, long maxAge) {
         return ResponseCookie.from("refreshToken", token)
-                .httpOnly(true).secure(secureCookie).sameSite("Strict")
-                .path("/auth").maxAge(Duration.ofDays(maxAge)).build();
-    }
-
-    private ResponseCookie deleteCookie() {
-        return ResponseCookie.from("refreshToken", "")
-                .httpOnly(true).secure(secureCookie).sameSite("Strict")
-                .path("/auth").maxAge(0).build();
+                .httpOnly(true).secure(true).sameSite("None")
+                .path("/").maxAge(Duration.ofDays(maxAge)).build();
     }
 
     @PostMapping("/register")
@@ -63,7 +55,8 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<ApiResponse<AuthResponse>> refresh(@CookieValue("refreshToken") String refreshToken) {
+    public ResponseEntity<ApiResponse<AuthResponse>> refresh(
+            @CookieValue(name = "refreshToken", required = false) String refreshToken) {
         AuthResult result = authService.refresh(refreshToken);
         ResponseCookie cookie = refreshCookie(result.refreshToken(), 7);
         return ResponseEntity.ok()
@@ -72,11 +65,16 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<Void>> logout(@CookieValue("refreshToken") String refreshToken) {
-        authService.logout(refreshToken);
-        ResponseCookie deleteCookie = this.deleteCookie();
+    public ResponseEntity<ApiResponse<Void>> logout(
+            @CookieValue(name = "refreshToken", required = false) String refreshToken) {
+        if (refreshToken != null) {
+            authService.logout(refreshToken);
+        }
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
+                .httpOnly(true).secure(true).sameSite("None")
+                .path("/").maxAge(0).build();
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(ApiResponse.success(Message.LOGOUT_SUCCESS, null));
     }
 
@@ -85,5 +83,14 @@ public class AuthController {
     public ResponseEntity<ApiResponse<AuthResponse>> me(@AuthenticationPrincipal Long accountId) {
         AuthResponse response = authService.getMe(accountId);
         return ResponseEntity.ok(ApiResponse.success(Message.AUTH_SUCCESS, response));
+    }
+
+    @PutMapping("/me")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<AuthResponse>> updateProfile(
+            @AuthenticationPrincipal Long accountId,
+            @Valid @RequestBody UpdateProfileRequest request) {
+        AuthResponse response = authService.updateProfile(accountId, request);
+        return ResponseEntity.ok(ApiResponse.success(Message.PROFILE_UPDATED, response));
     }
 }

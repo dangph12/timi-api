@@ -1,15 +1,20 @@
 package com.example.timi_api.infrastructure.web.v1;
 
 import com.example.timi_api.application.dto.request.CreateOrder;
+import com.example.timi_api.application.dto.response.OrderListItemResponse;
 import com.example.timi_api.application.dto.response.OrderResponse;
 import com.example.timi_api.application.service.OrderService;
+import com.example.timi_api.domain.constant.OrderStatus;
 import com.example.timi_api.infrastructure.common.ApiResponse;
 import com.example.timi_api.infrastructure.message.Message;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +24,16 @@ import org.springframework.web.bind.annotation.*;
 public class OrderController {
 
     private final OrderService orderService;
+
+    @GetMapping
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<Page<OrderListItemResponse>>> getMyOrders(
+            @AuthenticationPrincipal Long accountId,
+            @RequestParam(required = false) OrderStatus status,
+            Pageable pageable) {
+        Page<OrderListItemResponse> orders = orderService.getMyOrders(accountId, status, pageable);
+        return ResponseEntity.ok(ApiResponse.success(Message.LIST_ORDERS_SUCCESS, orders));
+    }
 
     @GetMapping("/{publicId}")
     public ResponseEntity<ApiResponse<OrderResponse>> getOrder(@PathVariable String publicId) {

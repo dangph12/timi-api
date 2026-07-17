@@ -3,6 +3,7 @@ package com.example.timi_api.application.service;
 import com.example.timi_api.application.dto.request.CreateOrder;
 import com.example.timi_api.application.dto.request.CreateOrderItem;
 import com.example.timi_api.application.dto.response.CharacterDesignResponse;
+import com.example.timi_api.application.dto.response.OrderListItemResponse;
 import com.example.timi_api.application.dto.response.OrderItemResponse;
 import com.example.timi_api.application.dto.response.OrderResponse;
 import com.example.timi_api.application.dto.response.OrderStatusHistoryResponse;
@@ -214,6 +215,101 @@ public class OrderService {
                 .build());
 
         return toOrderResponse(order);
+    }
+
+    @Transactional
+    public OrderResponse createOrderFromCartItems(
+            String email, String name, String phone, String address, String note,
+            List<CartItem> cartItems, Long accountId) {
+        List<Sku> skus = new java.util.ArrayList<>();
+        for (CartItem cartItem : cartItems) {
+            Sku sku = skuRepository.findById(cartItem.getSku().getId())
+                    .orElseThrow(() -> new NoSuchElementException(Message.SKU_NOT_FOUND + cartItem.getSku().getId()));
+            if (sku.getQuantity() < cartItem.getQuantity()) {
+                throw new IllegalArgumentException(Message.INSUFFICIENT_STOCK);
+            }
+            sku.setQuantity(sku.getQuantity() - cartItem.getQuantity());
+            skus.add(sku);
+        }
+
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new NoSuchElementException(Message.ACCOUNT_NOT_FOUND));
+
+        OrderStatus initialStatus = OrderStatus.CREATED;
+
+        Order order = orderRepository.save(Order.builder()
+                .publicId(generatePublicId())
+                .account(account)
+                .email(email)
+                .name(name)
+                .phone(phone)
+                .address(address)
+                .note(note)
+                .currentStatus(initialStatus)
+                .currentPaymentStatus(PaymentStatus.PENDING)
+                .totalAmount(BigDecimal.ZERO)
+                .build());
+
+        BigDecimal total = BigDecimal.ZERO;
+        for (int i = 0; i < cartItems.size(); i++) {
+            CartItem cartItem = cartItems.get(i);
+            Sku sku = skus.get(i);
+            CharacterDesign design = characterDesignRepository.getReferenceById(cartItem.getCharacterDesign().getId());
+            BigDecimal price = sku.getPrice();
+            total = total.add(price.multiply(BigDecimal.valueOf(cartItem.getQuantity())));
+
+            OrderItem savedItem = orderItemRepository.save(OrderItem.builder()
+                    .order(order)
+                    .sku(sku)
+                    .characterDesign(design)
+                    .quantity(cartItem.getQuantity())
+                    .priceAtPurchase(price)
+                    .build());
+            order.getItems().add(savedItem);
+        }
+
+        order.setTotalAmount(total);
+        orderRepository.save(order);
+
+        orderStatusHistoryRepository.save(OrderStatusHistory.builder()
+                .order(order)
+                .status(initialStatus)
+                .createdAt(LocalDateTime.now())
+                .build());
+
+        TransactionSynchronizationManager.registerSynchronization(
+                new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        emailService.sendOrderConfirmation(order);
+                    }
+                }
+        );
+
+        return toOrderResponse(order);
+    }
+
+    public org.springframework.data.domain.Page<OrderListItemResponse> getMyOrders(
+            Long accountId,
+            OrderStatus status,
+            org.springframework.data.domain.Pageable pageable) {
+        org.springframework.data.domain.Page<Order> orders;
+        if (status != null) {
+            orders = orderRepository.findByAccount_IdAndCurrentStatus(accountId, status, pageable);
+        } else {
+            orders = orderRepository.findByAccount_Id(accountId, pageable);
+        }
+        return orders.map(this::toOrderListItemResponse);
+    }
+
+    private OrderListItemResponse toOrderListItemResponse(Order order) {
+        return OrderListItemResponse.builder()
+                .publicId(order.getPublicId())
+                .currentStatus(order.getCurrentStatus())
+                .totalAmount(order.getTotalAmount())
+                .createdAt(order.getCreatedAt())
+                .itemCount(order.getItems().size())
+                .build();
     }
 
     private OrderResponse toOrderResponse(Order order) {
