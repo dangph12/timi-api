@@ -39,6 +39,17 @@ public class CartController {
                 .body(ApiResponse.success(Message.CART_ITEM_ADDED, item));
     }
 
+    @GetMapping("/count")
+    public ResponseEntity<ApiResponse<Long>> getCartCount(
+            @AuthenticationPrincipal Long accountId) {
+        if (accountId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.failed(Message.UNAUTHORIZED));
+        }
+        long count = cartService.getCartCount(accountId);
+        return ResponseEntity.ok(ApiResponse.success(Message.CART_COUNT_SUCCESS, count));
+    }
+
     @GetMapping
     public ResponseEntity<ApiResponse<Page<CartItemResponse>>> getCart(
             @AuthenticationPrincipal Long accountId,

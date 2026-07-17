@@ -58,6 +58,10 @@ public class CartService {
         return toCartItemResponse(item);
     }
 
+    public long getCartCount(Long accountId) {
+        return cartItemRepository.countByAccountId(accountId);
+    }
+
     public Page<CartItemResponse> getCart(Long accountId, Pageable pageable) {
         return cartItemRepository.findByAccountId(accountId, pageable)
                 .map(this::toCartItemResponse);

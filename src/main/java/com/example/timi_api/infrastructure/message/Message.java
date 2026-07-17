@@ -69,6 +69,7 @@ public final class Message {
     public static final String CART_ITEM_REMOVED = "Xóa sản phẩm khỏi giỏ hàng thành công";
     public static final String CART_GET_SUCCESS = "Lấy giỏ hàng thành công";
     public static final String CHECKOUT_SUCCESS = "Đặt hàng thành công";
+    public static final String CART_COUNT_SUCCESS = "Lấy số lượng giỏ hàng thành công";
     public static final String CART_ITEM_NOT_FOUND = "Không tìm thấy sản phẩm trong giỏ hàng";
     public static final String CART_ITEMS_NOT_EMPTY = "Vui lòng chọn sản phẩm để thanh toán";
 
