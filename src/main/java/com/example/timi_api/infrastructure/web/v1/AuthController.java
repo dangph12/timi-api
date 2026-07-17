@@ -30,10 +30,10 @@ public class AuthController {
         this.authService = authService;
     }
 
-    private ResponseCookie refreshCookie(String token, long maxAge) {
+    private ResponseCookie refreshCookie(String token, long maxAgeDays) {
         return ResponseCookie.from("refreshToken", token)
                 .httpOnly(true).secure(true).sameSite("None")
-                .path("/").maxAge(Duration.ofDays(maxAge)).build();
+                .path("/").maxAge(Duration.ofDays(maxAgeDays)).build();
     }
 
     @PostMapping("/register")
@@ -57,6 +57,10 @@ public class AuthController {
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<AuthResponse>> refresh(
             @CookieValue(name = "refreshToken", required = false) String refreshToken) {
+        if (refreshToken == null) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.failed(Message.REFRESH_TOKEN_INVALID));
+        }
         AuthResult result = authService.refresh(refreshToken);
         ResponseCookie cookie = refreshCookie(result.refreshToken(), 7);
         return ResponseEntity.ok()
@@ -70,9 +74,7 @@ public class AuthController {
         if (refreshToken != null) {
             authService.logout(refreshToken);
         }
-        ResponseCookie cookie = ResponseCookie.from("refreshToken", "")
-                .httpOnly(true).secure(true).sameSite("None")
-                .path("/").maxAge(0).build();
+        ResponseCookie cookie = refreshCookie("", 0);
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(ApiResponse.success(Message.LOGOUT_SUCCESS, null));

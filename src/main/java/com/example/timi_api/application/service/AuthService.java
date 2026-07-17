@@ -61,6 +61,8 @@ public class AuthService {
 
     @Transactional
     public AuthResult refresh(String refreshTokenValue) {
+        jwtTokenProvider.validateToken(refreshTokenValue);
+
         RefreshToken stored = refreshTokenRepository.findByToken(refreshTokenValue)
                 .orElseThrow(() -> new IllegalArgumentException(Message.REFRESH_TOKEN_INVALID));
 

@@ -58,7 +58,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
                 .httpOnly(true).secure(true).sameSite("None")
-                .path("/auth").maxAge(Duration.ofDays(7)).build();
+                .path("/").maxAge(Duration.ofDays(7)).build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
         getRedirectStrategy().sendRedirect(request, response,
