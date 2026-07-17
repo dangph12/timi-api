@@ -1,11 +1,12 @@
 package com.example.timi_api.infrastructure.security.oauth2;
 
 import com.example.timi_api.domain.entity.Account;
+import com.example.timi_api.domain.entity.RefreshToken;
 import com.example.timi_api.infrastructure.repository.AccountRepository;
+import com.example.timi_api.infrastructure.repository.RefreshTokenRepository;
 import com.example.timi_api.infrastructure.security.jwt.JwtTokenProvider;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -15,24 +16,26 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 @Component
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final AccountRepository accountRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final String clientUrl;
-    private final boolean secureCookie;
 
     public OAuth2SuccessHandler(
             JwtTokenProvider jwtTokenProvider,
             AccountRepository accountRepository,
-            @Value("${cors.allowed-origins}") String allowedOrigins,
-            @Value("${app.secure-cookie:true}") boolean secureCookie) {
+            RefreshTokenRepository refreshTokenRepository,
+            @Value("${cors.allowed-origins}") String allowedOrigins) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.accountRepository = accountRepository;
+        this.refreshTokenRepository = refreshTokenRepository;
         this.clientUrl = allowedOrigins.split(",")[0];
-        this.secureCookie = secureCookie;
     }
 
     @Override
@@ -46,9 +49,16 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String accessToken = jwtTokenProvider.generateAccessToken(account.getId(), account.getRole());
         String refreshToken = jwtTokenProvider.generateRefreshToken(account.getId());
 
+        RefreshToken refreshTokenEntity = RefreshToken.builder()
+                .token(refreshToken)
+                .accountId(account.getId())
+                .expiresAt(LocalDateTime.now().plusDays(7))
+                .build();
+        refreshTokenRepository.save(refreshTokenEntity);
+
         ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
-                .httpOnly(true).secure(secureCookie).sameSite("Strict")
-                .path("/auth").maxAge(java.time.Duration.ofDays(7)).build();
+                .httpOnly(true).secure(true).sameSite("None")
+                .path("/auth").maxAge(Duration.ofDays(7)).build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
         getRedirectStrategy().sendRedirect(request, response,
