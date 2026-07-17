@@ -2,6 +2,7 @@ package com.example.timi_api.application.service;
 
 import com.example.timi_api.application.dto.request.LoginRequest;
 import com.example.timi_api.application.dto.request.RegisterRequest;
+import com.example.timi_api.application.dto.request.UpdateProfileRequest;
 import com.example.timi_api.application.dto.response.AuthResponse;
 import com.example.timi_api.domain.constant.Role;
 import com.example.timi_api.domain.entity.Account;
@@ -63,27 +64,34 @@ public class AuthService {
         RefreshToken stored = refreshTokenRepository.findByToken(refreshTokenValue)
                 .orElseThrow(() -> new IllegalArgumentException(Message.REFRESH_TOKEN_INVALID));
 
-        if (stored.getExpiresAt().isBefore(LocalDateTime.now())) {
+        if (stored.isRevoked() || stored.getExpiresAt().isBefore(LocalDateTime.now())) {
             throw new IllegalArgumentException(Message.REFRESH_TOKEN_INVALID);
         }
 
-        refreshTokenRepository.delete(stored);
+        refreshTokenRepository.revokeByToken(refreshTokenValue);
 
         return generateAuthResult(stored.getAccountId());
     }
 
     @Transactional
     public void logout(String refreshTokenValue) {
-        RefreshToken stored = refreshTokenRepository.findByToken(refreshTokenValue)
-                .orElse(null);
-        if (stored != null) {
-            refreshTokenRepository.delete(stored);
-        }
+        refreshTokenRepository.revokeByToken(refreshTokenValue);
     }
 
     public AuthResponse getMe(Long accountId) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new NoSuchElementException(Message.ACCOUNT_NOT_FOUND));
+        return toAuthResponse(account, null);
+    }
+
+    @Transactional
+    public AuthResponse updateProfile(Long accountId, UpdateProfileRequest request) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new NoSuchElementException(Message.ACCOUNT_NOT_FOUND));
+        account.setFullName(request.getFullName());
+        account.setPhone(request.getPhone());
+        account.setAddress(request.getAddress());
+        accountRepository.save(account);
         return toAuthResponse(account, null);
     }
 
@@ -103,7 +111,9 @@ public class AuthService {
     }
 
     private AuthResult generateAuthResult(Long accountId) {
-        String accessToken = jwtTokenProvider.generateAccessToken(accountId, null);
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new NoSuchElementException(Message.ACCOUNT_NOT_FOUND));
+        String accessToken = jwtTokenProvider.generateAccessToken(accountId, account.getRole());
         String refreshTokenValue = jwtTokenProvider.generateRefreshToken(accountId);
 
         RefreshToken refreshTokenEntity = RefreshToken.builder()
@@ -118,6 +128,11 @@ public class AuthService {
                 .tokenType("Bearer")
                 .expiresIn(900L)
                 .accountId(accountId)
+                .email(account.getEmail())
+                .fullName(account.getFullName())
+                .phone(account.getPhone())
+                .address(account.getAddress())
+                .role(account.getRole().name())
                 .build();
         return new AuthResult(response, refreshTokenValue);
     }
@@ -130,6 +145,8 @@ public class AuthService {
                 .accountId(account.getId())
                 .email(account.getEmail())
                 .fullName(account.getFullName())
+                .phone(account.getPhone())
+                .address(account.getAddress())
                 .role(account.getRole().name())
                 .build();
     }
