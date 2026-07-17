@@ -49,6 +49,9 @@ spring:
 sepay:
   secret-key: ${SEPAY_SECRET_KEY}
 
+app:
+  secure-cookie: ${APP_SECURE_COOKIE:true}
+
 cors:
   allowed-origins: ${CORS_ALLOWED_ORIGINS}
 

@@ -6,6 +6,7 @@ import com.example.timi_api.infrastructure.security.jwt.JwtTokenProvider;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
@@ -16,11 +17,23 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 
 @Component
-@RequiredArgsConstructor
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JwtTokenProvider jwtTokenProvider;
     private final AccountRepository accountRepository;
+    private final String clientUrl;
+    private final boolean secureCookie;
+
+    public OAuth2SuccessHandler(
+            JwtTokenProvider jwtTokenProvider,
+            AccountRepository accountRepository,
+            @Value("${cors.allowed-origins}") String allowedOrigins,
+            @Value("${app.secure-cookie:true}") boolean secureCookie) {
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.accountRepository = accountRepository;
+        this.clientUrl = allowedOrigins.split(",")[0];
+        this.secureCookie = secureCookie;
+    }
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -34,11 +47,11 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String refreshToken = jwtTokenProvider.generateRefreshToken(account.getId());
 
         ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
-                .httpOnly(true).secure(true).sameSite("Strict")
+                .httpOnly(true).secure(secureCookie).sameSite("Strict")
                 .path("/auth").maxAge(java.time.Duration.ofDays(7)).build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
         getRedirectStrategy().sendRedirect(request, response,
-                "http://localhost:3000/oauth2/callback?accessToken=" + accessToken);
+                clientUrl + "/oauth2/callback?accessToken=" + accessToken);
     }
 }

@@ -8,7 +8,7 @@ import com.example.timi_api.application.service.AuthService.AuthResult;
 import com.example.timi_api.infrastructure.common.ApiResponse;
 import com.example.timi_api.infrastructure.message.Message;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -21,17 +21,33 @@ import java.time.Duration;
 
 @RestController
 @RequestMapping("/auth")
-@RequiredArgsConstructor
 public class AuthController {
 
     private final AuthService authService;
+    private final boolean secureCookie;
+
+    public AuthController(AuthService authService,
+                          @Value("${app.secure-cookie:true}") boolean secureCookie) {
+        this.authService = authService;
+        this.secureCookie = secureCookie;
+    }
+
+    private ResponseCookie refreshCookie(String token, long maxAge) {
+        return ResponseCookie.from("refreshToken", token)
+                .httpOnly(true).secure(secureCookie).sameSite("Strict")
+                .path("/auth").maxAge(Duration.ofDays(maxAge)).build();
+    }
+
+    private ResponseCookie deleteCookie() {
+        return ResponseCookie.from("refreshToken", "")
+                .httpOnly(true).secure(secureCookie).sameSite("Strict")
+                .path("/auth").maxAge(0).build();
+    }
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<AuthResponse>> register(@Valid @RequestBody RegisterRequest request) {
         AuthResult result = authService.register(request);
-        ResponseCookie cookie = ResponseCookie.from("refreshToken", result.refreshToken())
-                .httpOnly(true).secure(true).sameSite("Strict")
-                .path("/auth").maxAge(Duration.ofDays(7)).build();
+        ResponseCookie cookie = refreshCookie(result.refreshToken(), 7);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(ApiResponse.success(Message.REGISTER_SUCCESS, result.response()));
@@ -40,9 +56,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
         AuthResult result = authService.login(request);
-        ResponseCookie cookie = ResponseCookie.from("refreshToken", result.refreshToken())
-                .httpOnly(true).secure(true).sameSite("Strict")
-                .path("/auth").maxAge(Duration.ofDays(7)).build();
+        ResponseCookie cookie = refreshCookie(result.refreshToken(), 7);
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(ApiResponse.success(Message.LOGIN_SUCCESS, result.response()));
@@ -51,9 +65,7 @@ public class AuthController {
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<AuthResponse>> refresh(@CookieValue("refreshToken") String refreshToken) {
         AuthResult result = authService.refresh(refreshToken);
-        ResponseCookie cookie = ResponseCookie.from("refreshToken", result.refreshToken())
-                .httpOnly(true).secure(true).sameSite("Strict")
-                .path("/auth").maxAge(Duration.ofDays(7)).build();
+        ResponseCookie cookie = refreshCookie(result.refreshToken(), 7);
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(ApiResponse.success(Message.TOKEN_REFRESHED, result.response()));
@@ -62,9 +74,7 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(@CookieValue("refreshToken") String refreshToken) {
         authService.logout(refreshToken);
-        ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
-                .httpOnly(true).secure(true).sameSite("Strict")
-                .path("/auth").maxAge(0).build();
+        ResponseCookie deleteCookie = this.deleteCookie();
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
                 .body(ApiResponse.success(Message.LOGOUT_SUCCESS, null));
