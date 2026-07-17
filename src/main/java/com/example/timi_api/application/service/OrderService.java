@@ -50,10 +50,14 @@ public class OrderService {
         }
 
         for (CreateOrderItem item : request.getItems()) {
-            skuRepository.findById(item.getSkuId())
+            Sku sku = skuRepository.findById(item.getSkuId())
                     .orElseThrow(() -> new NoSuchElementException(Message.SKU_NOT_FOUND + item.getSkuId()));
             characterDesignRepository.findById(item.getCharacterDesignId())
                     .orElseThrow(() -> new NoSuchElementException(Message.DESIGN_NOT_FOUND + item.getCharacterDesignId()));
+            if (sku.getQuantity() < item.getQuantity()) {
+                throw new IllegalArgumentException(Message.INSUFFICIENT_STOCK);
+            }
+            sku.setQuantity(sku.getQuantity() - item.getQuantity());
         }
 
         Account account = accountId != null

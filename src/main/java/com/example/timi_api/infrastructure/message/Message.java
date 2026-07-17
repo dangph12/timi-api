@@ -14,6 +14,7 @@ public final class Message {
     public static final String PART_OPTION_NOT_FOUND = "Không tìm thấy tùy chọn bộ phận: ";
 
     // Business errors
+    public static final String INSUFFICIENT_STOCK = "Số lượng hàng trong kho không đủ";
     public static final String CANNOT_PAY_ORDER = "Không thể thanh toán đơn hàng này";
     public static final String ORDER_ALREADY_PAID = "Đơn hàng đã được thanh toán";
     public static final String CANNOT_CANCEL_ORDER = "Không thể hủy đơn hàng này";
