@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,7 +32,7 @@ public class OrderController {
     public ResponseEntity<ApiResponse<Page<OrderListItemResponse>>> getMyOrders(
             @AuthenticationPrincipal Long accountId,
             @RequestParam(required = false) OrderStatus status,
-            Pageable pageable) {
+            @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<OrderListItemResponse> orders = orderService.getMyOrders(accountId, status, pageable);
         return ResponseEntity.ok(ApiResponse.success(Message.LIST_ORDERS_SUCCESS, orders));
     }

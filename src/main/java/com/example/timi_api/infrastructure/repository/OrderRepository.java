@@ -1,7 +1,10 @@
 package com.example.timi_api.infrastructure.repository;
 
+import com.example.timi_api.domain.constant.OrderStatus;
 import com.example.timi_api.domain.constant.PaymentStatus;
 import com.example.timi_api.domain.entity.Order;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
@@ -25,4 +28,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     boolean existsByPublicId(String publicId);
 
     List<Order> findByCurrentPaymentStatusAndCreatedAtBefore(PaymentStatus status, LocalDateTime before);
+
+    Page<Order> findByAccount_Id(Long accountId, Pageable pageable);
+
+    Page<Order> findByAccount_IdAndCurrentStatus(Long accountId, OrderStatus currentStatus, Pageable pageable);
 }
