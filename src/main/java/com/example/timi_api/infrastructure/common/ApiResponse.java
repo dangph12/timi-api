@@ -9,7 +9,7 @@ public record ApiResponse<T>(String status, String message, @Nullable T data) {
         return new ApiResponse<>("success", message, data);
     }
 
-    public static ApiResponse<Void> failed(String message) {
+    public static <T> ApiResponse<T> failed(String message) {
         return new ApiResponse<>("failed", message, null);
     }
 }
