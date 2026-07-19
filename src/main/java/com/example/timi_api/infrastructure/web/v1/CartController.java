@@ -3,6 +3,7 @@ package com.example.timi_api.infrastructure.web.v1;
 import com.example.timi_api.application.dto.request.AddCartItemRequest;
 import com.example.timi_api.application.dto.request.CartCheckoutRequest;
 import com.example.timi_api.application.dto.request.UpdateCartItemQuantityRequest;
+import com.example.timi_api.application.dto.response.CartCountResponse;
 import com.example.timi_api.application.dto.response.CartItemResponse;
 import com.example.timi_api.application.dto.response.OrderResponse;
 import com.example.timi_api.application.service.CartService;
@@ -40,14 +41,14 @@ public class CartController {
     }
 
     @GetMapping("/count")
-    public ResponseEntity<ApiResponse<Long>> getCartCount(
+    public ResponseEntity<ApiResponse<CartCountResponse>> getCartCount(
             @AuthenticationPrincipal Long accountId) {
         if (accountId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(ApiResponse.failed(Message.UNAUTHORIZED));
         }
         long count = cartService.getCartCount(accountId);
-        return ResponseEntity.ok(ApiResponse.success(Message.CART_COUNT_SUCCESS, count));
+        return ResponseEntity.ok(ApiResponse.success(Message.CART_COUNT_SUCCESS, new CartCountResponse(count)));
     }
 
     @GetMapping
