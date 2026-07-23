@@ -4,6 +4,23 @@ spring:
       hibernate:
         format_sql: false
         show_sql: false
+  mail:
+    host: smtp-relay.brevo.com
+    port: 2525
+    username: ${BREVO_USERNAME}
+    password: ${BREVO_SMTP_KEY}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            redirect-uri: ${GOOGLE_REDIRECT_URI}
 
 management:
   health:
