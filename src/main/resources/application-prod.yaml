@@ -12,9 +12,9 @@ spring:
     port: 2525
     username: ${BREVO_USERNAME}
     password: ${BREVO_SMTP_KEY}
-    from: noreply@timiworkshop.online
     properties:
       mail:
+        from: noreply@timiworkshop.online
         smtp:
           auth: true
           starttls:
