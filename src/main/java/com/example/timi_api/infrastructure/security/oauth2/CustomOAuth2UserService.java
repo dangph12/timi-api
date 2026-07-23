@@ -17,7 +17,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private final AccountRepository accountRepository;
 
     @Override
-    @Transactional
     public OAuth2User loadUser(OAuth2UserRequest userRequest) {
         OAuth2User oAuth2User = super.loadUser(userRequest);
         String email = oAuth2User.getAttribute("email");
