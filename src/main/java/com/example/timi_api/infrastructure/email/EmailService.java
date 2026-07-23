@@ -37,6 +37,7 @@ public class EmailService {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, "UTF-8");
+            helper.setFrom("noreply@timiworkshop.online");
             helper.setTo(reloaded.getEmail());
             helper.setSubject(Message.EMAIL_ORDER_CONFIRM_SUBJECT + reloaded.getPublicId());
             helper.setText(render(reloaded), true);
