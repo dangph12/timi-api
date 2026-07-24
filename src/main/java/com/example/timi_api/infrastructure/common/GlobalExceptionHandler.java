@@ -52,4 +52,10 @@ public class GlobalExceptionHandler {
     public ApiResponse<Void> handleAuthentication(org.springframework.security.core.AuthenticationException ex) {
         return ApiResponse.failed(Message.UNAUTHORIZED);
     }
+
+    @ExceptionHandler(org.springframework.orm.ObjectOptimisticLockingFailureException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiResponse<Void> handleOptimisticLock(org.springframework.orm.ObjectOptimisticLockingFailureException ex) {
+        return ApiResponse.failed("Dữ liệu đã bị thay đổi bởi người khác. Vui lòng thử lại.");
+    }
 }
