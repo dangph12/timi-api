@@ -40,5 +40,8 @@ public class Sku {
     @Column(nullable = false)
     private Integer quantity;
 
+    @Version
+    private Long version;
+
     private LocalDateTime deletedAt;
 }

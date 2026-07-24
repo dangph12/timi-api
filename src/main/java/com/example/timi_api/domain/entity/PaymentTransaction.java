@@ -43,6 +43,9 @@ public class PaymentTransaction {
     @Column(unique = true)
     private String idempotencyKey;
 
+    @Version
+    private Long version;
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 

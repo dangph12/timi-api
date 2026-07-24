@@ -29,6 +29,9 @@ public class Order {
     @Column(unique = true)
     private String idempotencyKey;
 
+    @Version
+    private Long version;
+
     @ManyToOne
     @JoinColumn(name = "account_id")
     @ToString.Exclude
