@@ -11,6 +11,7 @@ import com.example.timi_api.application.dto.response.SkuResponse;
 import com.example.timi_api.domain.constant.OrderStatus;
 import com.example.timi_api.domain.constant.PaymentMethod;
 import com.example.timi_api.domain.constant.PaymentStatus;
+import com.example.timi_api.domain.constant.SkuTransactionType;
 import com.example.timi_api.domain.entity.*;
 import com.example.timi_api.infrastructure.email.EmailService;
 import com.example.timi_api.infrastructure.message.Message;
@@ -36,6 +37,7 @@ public class OrderService {
     private final OrderItemRepository orderItemRepository;
     private final OrderStatusHistoryRepository orderStatusHistoryRepository;
     private final SkuRepository skuRepository;
+    private final SkuTransactionRepository skuTransactionRepository;
     private final CharacterDesignRepository characterDesignRepository;
     private final AccountRepository accountRepository;
     private final PaymentTransactionRepository paymentTransactionRepository;
@@ -86,6 +88,16 @@ public class OrderService {
         for (CreateOrderItem item : request.getItems()) {
             Sku sku = skuRepository.getReferenceById(item.getSkuId());
             CharacterDesign design = characterDesignRepository.getReferenceById(item.getCharacterDesignId());
+
+            skuTransactionRepository.save(SkuTransaction.builder()
+                    .sku(sku)
+                    .order(order)
+                    .oldQuantity(sku.getQuantity() + item.getQuantity())
+                    .newQuantity(sku.getQuantity())
+                    .changeAmount(-item.getQuantity())
+                    .transactionType(SkuTransactionType.ORDER_OUT)
+                    .build());
+
             BigDecimal price = sku.getPrice();
             total = total.add(price.multiply(BigDecimal.valueOf(item.getQuantity())));
 
@@ -204,6 +216,23 @@ public class OrderService {
             throw new IllegalArgumentException(Message.CANNOT_CANCEL_ORDER);
         }
 
+        for (OrderItem item : order.getItems()) {
+            Sku sku = item.getSku();
+            int oldQuantity = sku.getQuantity();
+            int newQuantity = oldQuantity + item.getQuantity();
+            sku.setQuantity(newQuantity);
+            skuRepository.save(sku);
+
+            skuTransactionRepository.save(SkuTransaction.builder()
+                    .sku(sku)
+                    .order(order)
+                    .oldQuantity(oldQuantity)
+                    .newQuantity(newQuantity)
+                    .changeAmount(item.getQuantity())
+                    .transactionType(SkuTransactionType.RESTOCK_IN)
+                    .build());
+        }
+
         order.setCurrentStatus(OrderStatus.CANCELLED);
         orderRepository.save(order);
 
@@ -255,6 +284,16 @@ public class OrderService {
             CartItem cartItem = cartItems.get(i);
             Sku sku = skus.get(i);
             CharacterDesign design = characterDesignRepository.getReferenceById(cartItem.getCharacterDesign().getId());
+
+            skuTransactionRepository.save(SkuTransaction.builder()
+                    .sku(sku)
+                    .order(order)
+                    .oldQuantity(sku.getQuantity() + cartItem.getQuantity())
+                    .newQuantity(sku.getQuantity())
+                    .changeAmount(-cartItem.getQuantity())
+                    .transactionType(SkuTransactionType.ORDER_OUT)
+                    .build());
+
             BigDecimal price = sku.getPrice();
             total = total.add(price.multiply(BigDecimal.valueOf(cartItem.getQuantity())));
 
