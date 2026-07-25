@@ -2,15 +2,20 @@ package com.example.timi_api.application.service;
 
 import com.example.timi_api.application.dto.response.SkuResponse;
 import com.example.timi_api.domain.constant.SkuTransactionType;
+import com.example.timi_api.domain.entity.Category;
 import com.example.timi_api.domain.entity.Order;
+import com.example.timi_api.domain.entity.Size;
 import com.example.timi_api.domain.entity.Sku;
 import com.example.timi_api.domain.entity.SkuTransaction;
 import com.example.timi_api.infrastructure.repository.SkuRepository;
 import com.example.timi_api.infrastructure.repository.SkuTransactionRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -20,13 +25,27 @@ public class SkuService {
     private final SkuRepository skuRepository;
     private final SkuTransactionRepository skuTransactionRepository;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
     @Transactional
-    public void adjustQuantity(Long skuId, int changeAmount, SkuTransactionType type, Order order) {
+    public void updateSku(Long id, String skuCode, Long categoryId, Long sizeId, BigDecimal price) {
+        Sku sku = skuRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy SKU: " + id));
+        sku.setSkuCode(skuCode);
+        sku.setCategory(entityManager.getReference(Category.class, categoryId));
+        sku.setSize(entityManager.getReference(Size.class, sizeId));
+        sku.setPrice(price);
+    }
+
+    @Transactional
+    public void adjustQuantity(Long skuId, int quantity, SkuTransactionType type, Order order) {
         Sku sku = skuRepository.findById(skuId)
                 .orElseThrow(() -> new NoSuchElementException("Không tìm thấy SKU: " + skuId));
 
+        int delta = type.applySign(quantity);
         int oldQuantity = sku.getQuantity();
-        int newQuantity = oldQuantity + changeAmount;
+        int newQuantity = oldQuantity + delta;
 
         if (newQuantity < 0) {
             throw new IllegalArgumentException("Số lượng hàng trong kho không đủ");
@@ -39,11 +58,16 @@ public class SkuService {
                 .order(order)
                 .oldQuantity(oldQuantity)
                 .newQuantity(newQuantity)
-                .changeAmount(changeAmount)
+                .changeAmount(delta)
                 .transactionType(type)
                 .build());
 
         skuRepository.save(sku);
+    }
+
+    @Transactional
+    public void adjustQuantity(Long skuId, int quantity, SkuTransactionType type) {
+        adjustQuantity(skuId, quantity, type, null);
     }
 
     public List<SkuResponse> getAllSkus() {

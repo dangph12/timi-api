@@ -26,6 +26,8 @@ public final class Message {
     public static final String GET_ORDER_SUCCESS = "Lấy đơn hàng thành công";
     public static final String LIST_ORDERS_SUCCESS = "Lấy danh sách đơn hàng thành công";
     public static final String LIST_SKUS_SUCCESS = "Lấy danh sách SKU thành công";
+    public static final String SKU_UPDATED = "Cập nhật SKU thành công";
+    public static final String SKU_QUANTITY_ADJUSTED = "Điều chỉnh số lượng SKU thành công";
     public static final String LIST_PARTS_SUCCESS = "Lấy danh sách bộ phận thành công";
     public static final String LIST_PART_OPTIONS_SUCCESS = "Lấy danh sách tùy chọn thành công";
     public static final String PAYMENT_SUCCESS = "Thanh toán thành công";
