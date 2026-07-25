@@ -72,7 +72,7 @@ public class SkuService {
                 .oldQuantity(oldQuantity)
                 .newQuantity(newQuantity)
                 .changeAmount(delta)
-                .type(type)
+                .logType(type)
                 .build());
 
         skuRepository.save(sku);

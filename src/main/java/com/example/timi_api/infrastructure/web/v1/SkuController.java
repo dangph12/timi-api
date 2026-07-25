@@ -53,7 +53,7 @@ public class SkuController {
     @PostMapping("/{id}/adjust")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> adjustQuantity(@PathVariable Long id, @RequestBody @Valid AdjustSkuQuantityRequest request) {
-        skuService.adjustQuantity(id, request.getQuantity(), request.getType());
+        skuService.adjustQuantity(id, request.getQuantity(), request.getLogType());
         return ResponseEntity.ok(ApiResponse.success(Message.SKU_QUANTITY_ADJUSTED));
     }
 

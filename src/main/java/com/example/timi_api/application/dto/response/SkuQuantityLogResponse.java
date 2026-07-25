@@ -10,7 +10,7 @@ public record SkuQuantityLogResponse(
         Integer oldQuantity,
         Integer newQuantity,
         Integer changeAmount,
-        String type,
+        String logType,
         LocalDateTime createdAt
 ) {
 }

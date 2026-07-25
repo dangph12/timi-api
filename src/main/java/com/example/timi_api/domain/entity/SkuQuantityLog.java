@@ -41,7 +41,7 @@ public class SkuQuantityLog {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "log_type", nullable = false)
-    private SkuQuantityLogType type;
+    private SkuQuantityLogType logType;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;

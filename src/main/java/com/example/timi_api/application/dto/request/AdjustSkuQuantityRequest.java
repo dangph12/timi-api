@@ -13,5 +13,5 @@ public class AdjustSkuQuantityRequest {
     private Integer quantity;
 
     @NotNull
-    private SkuQuantityLogType type;
+    private SkuQuantityLogType logType;
 }

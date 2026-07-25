@@ -95,7 +95,7 @@ public class OrderService {
                     .oldQuantity(sku.getQuantity() + item.getQuantity())
                     .newQuantity(sku.getQuantity())
                     .changeAmount(-item.getQuantity())
-                    .type(SkuQuantityLogType.ORDER_OUT)
+                    .logType(SkuQuantityLogType.ORDER_OUT)
                     .build());
 
             BigDecimal price = sku.getPrice();
@@ -229,7 +229,7 @@ public class OrderService {
                     .oldQuantity(oldQuantity)
                     .newQuantity(newQuantity)
                     .changeAmount(item.getQuantity())
-                    .type(SkuQuantityLogType.RESTOCK_IN)
+                    .logType(SkuQuantityLogType.RESTOCK_IN)
                     .build());
         }
 
@@ -291,7 +291,7 @@ public class OrderService {
                     .oldQuantity(sku.getQuantity() + cartItem.getQuantity())
                     .newQuantity(sku.getQuantity())
                     .changeAmount(-cartItem.getQuantity())
-                    .type(SkuQuantityLogType.ORDER_OUT)
+                    .logType(SkuQuantityLogType.ORDER_OUT)
                     .build());
 
             BigDecimal price = sku.getPrice();

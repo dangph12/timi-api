@@ -33,7 +33,7 @@ public class SkuQuantityLogService {
                 log.getOldQuantity(),
                 log.getNewQuantity(),
                 log.getChangeAmount(),
-                log.getType().name(),
+                log.getLogType().name(),
                 log.getCreatedAt()
         );
     }
