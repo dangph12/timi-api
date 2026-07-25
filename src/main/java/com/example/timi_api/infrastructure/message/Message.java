@@ -26,12 +26,14 @@ public final class Message {
     public static final String GET_ORDER_SUCCESS = "Lấy đơn hàng thành công";
     public static final String LIST_ORDERS_SUCCESS = "Lấy danh sách đơn hàng thành công";
     public static final String LIST_SKUS_SUCCESS = "Lấy danh sách SKU thành công";
+    public static final String GET_SKU_SUCCESS = "Lấy thông tin SKU thành công";
     public static final String SKU_CREATED = "Tạo SKU thành công";
     public static final String SKU_UPDATED = "Cập nhật SKU thành công";
     public static final String SKU_DELETED = "Xóa SKU thành công";
     public static final String SKU_QUANTITY_ADJUSTED = "Điều chỉnh số lượng SKU thành công";
     public static final String LIST_CATEGORIES_SUCCESS = "Lấy danh sách danh mục thành công";
     public static final String LIST_SIZES_SUCCESS = "Lấy danh sách kích thước thành công";
+    public static final String LIST_SKU_TRANSACTIONS_SUCCESS = "Lấy lịch sử giao dịch SKU thành công";
     public static final String LIST_PARTS_SUCCESS = "Lấy danh sách bộ phận thành công";
     public static final String LIST_PART_OPTIONS_SUCCESS = "Lấy danh sách tùy chọn thành công";
     public static final String PAYMENT_SUCCESS = "Thanh toán thành công";
