@@ -16,8 +16,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.NoSuchElementException;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 @RequiredArgsConstructor
@@ -70,8 +72,8 @@ public class SkuService {
         adjustQuantity(skuId, quantity, type, null);
     }
 
-    public List<SkuResponse> getAllSkus() {
-        return skuRepository.findAll().stream()
+    public Page<SkuResponse> getAllSkus(Pageable pageable) {
+        return skuRepository.findAll(pageable)
                 .map(sku -> new SkuResponse(
                         sku.getId(),
                         sku.getSkuCode(),
@@ -79,7 +81,7 @@ public class SkuService {
                         sku.getSize(),
                         sku.getPrice(),
                         sku.getQuantity()
-                )).toList();
+                ));
     }
 
 }

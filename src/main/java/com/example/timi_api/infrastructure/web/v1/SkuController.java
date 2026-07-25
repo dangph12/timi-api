@@ -8,11 +8,13 @@ import com.example.timi_api.infrastructure.common.ApiResponse;
 import com.example.timi_api.infrastructure.message.Message;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/v1/skus")
@@ -21,8 +23,9 @@ public class SkuController {
     private final SkuService skuService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<SkuResponse>>> getAllSkus() {
-        List<SkuResponse> skus = skuService.getAllSkus();
+    public ResponseEntity<ApiResponse<Page<SkuResponse>>> getAllSkus(
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
+        Page<SkuResponse> skus = skuService.getAllSkus(pageable);
         return ResponseEntity.ok(ApiResponse.success(Message.LIST_SKUS_SUCCESS, skus));
     }
 
