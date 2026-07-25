@@ -1,6 +1,7 @@
 package com.example.timi_api.infrastructure.web.v1;
 
 import com.example.timi_api.application.dto.request.AdjustSkuQuantityRequest;
+import com.example.timi_api.application.dto.request.CreateSkuRequest;
 import com.example.timi_api.application.dto.request.UpdateSkuRequest;
 import com.example.timi_api.application.dto.response.SkuResponse;
 import com.example.timi_api.application.service.SkuService;
@@ -29,6 +30,13 @@ public class SkuController {
         return ResponseEntity.ok(ApiResponse.success(Message.LIST_SKUS_SUCCESS, skus));
     }
 
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<SkuResponse>> createSku(@RequestBody @Valid CreateSkuRequest request) {
+        SkuResponse sku = skuService.createSku(request.getSkuCode(), request.getCategoryId(), request.getSizeId(), request.getPrice(), request.getQuantity());
+        return ResponseEntity.ok(ApiResponse.success(Message.SKU_CREATED, sku));
+    }
+
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> updateSku(@PathVariable Long id, @RequestBody @Valid UpdateSkuRequest request) {
@@ -41,5 +49,12 @@ public class SkuController {
     public ResponseEntity<ApiResponse<Void>> adjustQuantity(@PathVariable Long id, @RequestBody @Valid AdjustSkuQuantityRequest request) {
         skuService.adjustQuantity(id, request.getQuantity(), request.getTransactionType());
         return ResponseEntity.ok(ApiResponse.success(Message.SKU_QUANTITY_ADJUSTED));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<Void>> deleteSku(@PathVariable Long id) {
+        skuService.deleteSku(id);
+        return ResponseEntity.ok(ApiResponse.success(Message.SKU_DELETED));
     }
 }

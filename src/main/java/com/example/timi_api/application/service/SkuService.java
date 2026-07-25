@@ -12,14 +12,13 @@ import com.example.timi_api.infrastructure.repository.SkuTransactionRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.NoSuchElementException;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +28,18 @@ public class SkuService {
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    @Transactional
+    public SkuResponse createSku(String skuCode, Long categoryId, Long sizeId, BigDecimal price, Integer quantity) {
+        Sku sku = new Sku();
+        sku.setSkuCode(skuCode);
+        sku.setCategory(entityManager.getReference(Category.class, categoryId));
+        sku.setSize(entityManager.getReference(Size.class, sizeId));
+        sku.setPrice(price);
+        sku.setQuantity(quantity);
+        skuRepository.save(sku);
+        return new SkuResponse(sku.getId(), sku.getSkuCode(), sku.getCategory(), sku.getSize(), sku.getPrice(), sku.getQuantity());
+    }
 
     @Transactional
     public void updateSku(Long id, String skuCode, Long categoryId, Long sizeId, BigDecimal price) {
@@ -70,6 +81,13 @@ public class SkuService {
     @Transactional
     public void adjustQuantity(Long skuId, int quantity, SkuTransactionType type) {
         adjustQuantity(skuId, quantity, type, null);
+    }
+
+    @Transactional
+    public void deleteSku(Long id) {
+        Sku sku = skuRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy SKU: " + id));
+        skuRepository.delete(sku);
     }
 
     public Page<SkuResponse> getAllSkus(Pageable pageable) {
