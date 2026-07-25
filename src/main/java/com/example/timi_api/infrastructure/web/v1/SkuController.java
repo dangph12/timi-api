@@ -30,6 +30,12 @@ public class SkuController {
         return ResponseEntity.ok(ApiResponse.success(Message.LIST_SKUS_SUCCESS, skus));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<SkuResponse>> getSkuById(@PathVariable Long id) {
+        SkuResponse sku = skuService.getSkuById(id);
+        return ResponseEntity.ok(ApiResponse.success(Message.GET_SKU_SUCCESS, sku));
+    }
+
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<SkuResponse>> createSku(@RequestBody @Valid CreateSkuRequest request) {
@@ -47,7 +53,7 @@ public class SkuController {
     @PostMapping("/{id}/adjust")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> adjustQuantity(@PathVariable Long id, @RequestBody @Valid AdjustSkuQuantityRequest request) {
-        skuService.adjustQuantity(id, request.getQuantity(), request.getTransactionType());
+        skuService.adjustQuantity(id, request.getQuantity(), request.getType());
         return ResponseEntity.ok(ApiResponse.success(Message.SKU_QUANTITY_ADJUSTED));
     }
 

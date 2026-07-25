@@ -1,6 +1,6 @@
 package com.example.timi_api.domain.constant;
 
-public enum SkuTransactionType {
+public enum SkuQuantityLogType {
     ORDER_OUT(-1),
     RESTOCK_IN(1),
     MANUAL_EXPORT(-1),
@@ -9,7 +9,7 @@ public enum SkuTransactionType {
 
     private final int sign;
 
-    SkuTransactionType(int sign) {
+    SkuQuantityLogType(int sign) {
         this.sign = sign;
     }
 

@@ -1,14 +1,14 @@
 package com.example.timi_api.application.service;
 
 import com.example.timi_api.application.dto.response.SkuResponse;
-import com.example.timi_api.domain.constant.SkuTransactionType;
+import com.example.timi_api.domain.constant.SkuQuantityLogType;
 import com.example.timi_api.domain.entity.Category;
 import com.example.timi_api.domain.entity.Order;
 import com.example.timi_api.domain.entity.Size;
 import com.example.timi_api.domain.entity.Sku;
-import com.example.timi_api.domain.entity.SkuTransaction;
+import com.example.timi_api.domain.entity.SkuQuantityLog;
 import com.example.timi_api.infrastructure.repository.SkuRepository;
-import com.example.timi_api.infrastructure.repository.SkuTransactionRepository;
+import com.example.timi_api.infrastructure.repository.SkuQuantityLogRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,7 @@ import java.util.NoSuchElementException;
 @RequiredArgsConstructor
 public class SkuService {
     private final SkuRepository skuRepository;
-    private final SkuTransactionRepository skuTransactionRepository;
+    private final SkuQuantityLogRepository skuQuantityLogRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -52,7 +52,7 @@ public class SkuService {
     }
 
     @Transactional
-    public void adjustQuantity(Long skuId, int quantity, SkuTransactionType type, Order order) {
+    public void adjustQuantity(Long skuId, int quantity, SkuQuantityLogType type, Order order) {
         Sku sku = skuRepository.findById(skuId)
                 .orElseThrow(() -> new NoSuchElementException("Không tìm thấy SKU: " + skuId));
 
@@ -66,20 +66,20 @@ public class SkuService {
 
         sku.setQuantity(newQuantity);
 
-        skuTransactionRepository.save(SkuTransaction.builder()
+        skuQuantityLogRepository.save(SkuQuantityLog.builder()
                 .sku(sku)
                 .order(order)
                 .oldQuantity(oldQuantity)
                 .newQuantity(newQuantity)
                 .changeAmount(delta)
-                .transactionType(type)
+                .type(type)
                 .build());
 
         skuRepository.save(sku);
     }
 
     @Transactional
-    public void adjustQuantity(Long skuId, int quantity, SkuTransactionType type) {
+    public void adjustQuantity(Long skuId, int quantity, SkuQuantityLogType type) {
         adjustQuantity(skuId, quantity, type, null);
     }
 
@@ -88,6 +88,12 @@ public class SkuService {
         Sku sku = skuRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Không tìm thấy SKU: " + id));
         skuRepository.delete(sku);
+    }
+
+    public SkuResponse getSkuById(Long id) {
+        Sku sku = skuRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy SKU: " + id));
+        return new SkuResponse(sku.getId(), sku.getSkuCode(), sku.getCategory(), sku.getSize(), sku.getPrice(), sku.getQuantity());
     }
 
     public Page<SkuResponse> getAllSkus(Pageable pageable) {

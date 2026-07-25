@@ -1,6 +1,6 @@
 package com.example.timi_api.application.dto.request;
 
-import com.example.timi_api.domain.constant.SkuTransactionType;
+import com.example.timi_api.domain.constant.SkuQuantityLogType;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -13,5 +13,5 @@ public class AdjustSkuQuantityRequest {
     private Integer quantity;
 
     @NotNull
-    private SkuTransactionType transactionType;
+    private SkuQuantityLogType type;
 }

@@ -1,6 +1,6 @@
 package com.example.timi_api.domain.entity;
 
-import com.example.timi_api.domain.constant.SkuTransactionType;
+import com.example.timi_api.domain.constant.SkuQuantityLogType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,8 +11,8 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "sku_transaction")
-public class SkuTransaction {
+@Table(name = "sku_quantity_log")
+public class SkuQuantityLog {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,8 +40,8 @@ public class SkuTransaction {
     private Integer changeAmount;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private SkuTransactionType transactionType;
+    @Column(name = "log_type", nullable = false)
+    private SkuQuantityLogType type;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;

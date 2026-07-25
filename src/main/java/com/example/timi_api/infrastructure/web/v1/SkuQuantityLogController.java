@@ -1,7 +1,7 @@
 package com.example.timi_api.infrastructure.web.v1;
 
-import com.example.timi_api.application.dto.response.SkuTransactionResponse;
-import com.example.timi_api.application.service.SkuTransactionService;
+import com.example.timi_api.application.dto.response.SkuQuantityLogResponse;
+import com.example.timi_api.application.service.SkuQuantityLogService;
 import com.example.timi_api.infrastructure.common.ApiResponse;
 import com.example.timi_api.infrastructure.message.Message;
 import lombok.RequiredArgsConstructor;
@@ -17,23 +17,23 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/v1/sku-transactions")
+@RequestMapping("/v1/sku-quantity-logs")
 @RequiredArgsConstructor
-public class SkuTransactionController {
+public class SkuQuantityLogController {
 
-    private final SkuTransactionService skuTransactionService;
+    private final SkuQuantityLogService skuQuantityLogService;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<Page<SkuTransactionResponse>>> getSkuTransactions(
+    public ResponseEntity<ApiResponse<Page<SkuQuantityLogResponse>>> getSkuQuantityLogs(
             @RequestParam(required = false) Long skuId,
             @PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        Page<SkuTransactionResponse> transactions;
+        Page<SkuQuantityLogResponse> logs;
         if (skuId != null) {
-            transactions = skuTransactionService.getBySkuId(skuId, pageable);
+            logs = skuQuantityLogService.getBySkuId(skuId, pageable);
         } else {
-            transactions = skuTransactionService.getAll(pageable);
+            logs = skuQuantityLogService.getAll(pageable);
         }
-        return ResponseEntity.ok(ApiResponse.success(Message.LIST_SKU_TRANSACTIONS_SUCCESS, transactions));
+        return ResponseEntity.ok(ApiResponse.success(Message.LIST_SKU_QUANTITY_LOGS_SUCCESS, logs));
     }
 }

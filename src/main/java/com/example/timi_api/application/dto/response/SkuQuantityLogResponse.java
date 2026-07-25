@@ -2,7 +2,7 @@ package com.example.timi_api.application.dto.response;
 
 import java.time.LocalDateTime;
 
-public record SkuTransactionResponse(
+public record SkuQuantityLogResponse(
         Long id,
         Long skuId,
         String skuCode,
@@ -10,7 +10,7 @@ public record SkuTransactionResponse(
         Integer oldQuantity,
         Integer newQuantity,
         Integer changeAmount,
-        String transactionType,
+        String type,
         LocalDateTime createdAt
 ) {
 }
