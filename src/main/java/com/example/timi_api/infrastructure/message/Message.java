@@ -30,6 +30,8 @@ public final class Message {
     public static final String SKU_UPDATED = "Cập nhật SKU thành công";
     public static final String SKU_DELETED = "Xóa SKU thành công";
     public static final String SKU_QUANTITY_ADJUSTED = "Điều chỉnh số lượng SKU thành công";
+    public static final String LIST_CATEGORIES_SUCCESS = "Lấy danh sách danh mục thành công";
+    public static final String LIST_SIZES_SUCCESS = "Lấy danh sách kích thước thành công";
     public static final String LIST_PARTS_SUCCESS = "Lấy danh sách bộ phận thành công";
     public static final String LIST_PART_OPTIONS_SUCCESS = "Lấy danh sách tùy chọn thành công";
     public static final String PAYMENT_SUCCESS = "Thanh toán thành công";
