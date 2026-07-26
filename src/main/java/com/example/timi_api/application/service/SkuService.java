@@ -8,6 +8,7 @@ import com.example.timi_api.domain.entity.Size;
 import com.example.timi_api.domain.entity.Sku;
 import com.example.timi_api.domain.entity.SkuQuantityLog;
 import com.example.timi_api.infrastructure.repository.SkuRepository;
+import com.example.timi_api.infrastructure.message.Message;
 import com.example.timi_api.infrastructure.repository.SkuQuantityLogRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -44,7 +45,7 @@ public class SkuService {
     @Transactional
     public void updateSku(Long id, String skuCode, Long categoryId, Long sizeId, BigDecimal price) {
         Sku sku = skuRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy SKU: " + id));
+                .orElseThrow(() -> new NoSuchElementException(Message.ADMIN_SKU_NOT_FOUND + id));
         sku.setSkuCode(skuCode);
         sku.setCategory(entityManager.getReference(Category.class, categoryId));
         sku.setSize(entityManager.getReference(Size.class, sizeId));
@@ -54,14 +55,14 @@ public class SkuService {
     @Transactional
     public void adjustQuantity(Long skuId, int quantity, SkuQuantityLogType type, Order order) {
         Sku sku = skuRepository.findById(skuId)
-                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy SKU: " + skuId));
+                .orElseThrow(() -> new NoSuchElementException(Message.ADMIN_SKU_NOT_FOUND + skuId));
 
         int delta = type.applySign(quantity);
         int oldQuantity = sku.getQuantity();
         int newQuantity = oldQuantity + delta;
 
         if (newQuantity < 0) {
-            throw new IllegalArgumentException("Số lượng hàng trong kho không đủ");
+            throw new IllegalArgumentException(Message.ADMIN_INSUFFICIENT_STOCK);
         }
 
         sku.setQuantity(newQuantity);
@@ -86,13 +87,13 @@ public class SkuService {
     @Transactional
     public void deleteSku(Long id) {
         Sku sku = skuRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy SKU: " + id));
+                .orElseThrow(() -> new NoSuchElementException(Message.ADMIN_SKU_NOT_FOUND + id));
         skuRepository.delete(sku);
     }
 
     public SkuResponse getSkuById(Long id) {
         Sku sku = skuRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Không tìm thấy SKU: " + id));
+                .orElseThrow(() -> new NoSuchElementException(Message.ADMIN_SKU_NOT_FOUND + id));
         return new SkuResponse(sku.getId(), sku.getSkuCode(), sku.getCategory(), sku.getSize(), sku.getPrice(), sku.getQuantity());
     }
 

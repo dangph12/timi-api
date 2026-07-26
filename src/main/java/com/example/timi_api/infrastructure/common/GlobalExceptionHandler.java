@@ -2,6 +2,7 @@ package com.example.timi_api.infrastructure.common;
 
 import com.example.timi_api.infrastructure.message.Message;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -56,6 +57,9 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(org.springframework.orm.ObjectOptimisticLockingFailureException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public ApiResponse<Void> handleOptimisticLock(org.springframework.orm.ObjectOptimisticLockingFailureException ex) {
-        return ApiResponse.failed("Dữ liệu đã bị thay đổi bởi người khác. Vui lòng thử lại.");
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        return ApiResponse.failed(isAdmin ? Message.ADMIN_OPTIMISTIC_LOCK : Message.USER_OPTIMISTIC_LOCK);
     }
 }

@@ -54,11 +54,11 @@ public class OrderService {
 
         for (CreateOrderItem item : request.getItems()) {
             Sku sku = skuRepository.findById(item.getSkuId())
-                    .orElseThrow(() -> new NoSuchElementException(Message.SKU_NOT_FOUND + item.getSkuId()));
+                    .orElseThrow(() -> new NoSuchElementException(Message.USER_SKU_NOT_FOUND));
             characterDesignRepository.findById(item.getCharacterDesignId())
-                    .orElseThrow(() -> new NoSuchElementException(Message.DESIGN_NOT_FOUND + item.getCharacterDesignId()));
+                    .orElseThrow(() -> new NoSuchElementException(Message.USER_DESIGN_NOT_FOUND));
             if (sku.getQuantity() < item.getQuantity()) {
-                throw new IllegalArgumentException(Message.INSUFFICIENT_STOCK);
+                throw new IllegalArgumentException(Message.USER_INSUFFICIENT_STOCK);
             }
             sku.setQuantity(sku.getQuantity() - item.getQuantity());
         }
@@ -253,9 +253,9 @@ public class OrderService {
         List<Sku> skus = new java.util.ArrayList<>();
         for (CartItem cartItem : cartItems) {
             Sku sku = skuRepository.findById(cartItem.getSku().getId())
-                    .orElseThrow(() -> new NoSuchElementException(Message.SKU_NOT_FOUND + cartItem.getSku().getId()));
+                    .orElseThrow(() -> new NoSuchElementException(Message.USER_SKU_NOT_FOUND));
             if (sku.getQuantity() < cartItem.getQuantity()) {
-                throw new IllegalArgumentException(Message.INSUFFICIENT_STOCK);
+                throw new IllegalArgumentException(Message.USER_INSUFFICIENT_STOCK);
             }
             sku.setQuantity(sku.getQuantity() - cartItem.getQuantity());
             skus.add(sku);

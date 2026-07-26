@@ -4,17 +4,24 @@ public final class Message {
 
     private Message() {}
 
+    // Concurrency
+    public static final String USER_OPTIMISTIC_LOCK = "Hệ thống đang xử lý, vui lòng thử lại sau";
+    public static final String ADMIN_OPTIMISTIC_LOCK = "Dữ liệu đã bị thay đổi, vui lòng tải lại trang và thử lại";
+
     // Not found errors
     public static final String NOT_FOUND = "Không tìm thấy";
     public static final String ORDER_NOT_FOUND = "Không tìm thấy đơn hàng";
-    public static final String SKU_NOT_FOUND = "Không tìm thấy SKU: ";
-    public static final String DESIGN_NOT_FOUND = "Không tìm thấy thiết kế: ";
+    public static final String USER_SKU_NOT_FOUND = "Sản phẩm không tồn tại";
+    public static final String ADMIN_SKU_NOT_FOUND = "Không tìm thấy SKU: ";
+    public static final String USER_DESIGN_NOT_FOUND = "Thiết kế không tồn tại";
+    public static final String ADMIN_DESIGN_NOT_FOUND = "Không tìm thấy thiết kế: ";
     public static final String ACCOUNT_NOT_FOUND = "Không tìm thấy tài khoản";
     public static final String PART_NOT_FOUND = "Không tìm thấy bộ phận: ";
     public static final String PART_OPTION_NOT_FOUND = "Không tìm thấy tùy chọn bộ phận: ";
 
     // Business errors
-    public static final String INSUFFICIENT_STOCK = "Số lượng hàng trong kho không đủ";
+    public static final String USER_INSUFFICIENT_STOCK = "Số lượng hàng trong kho không đủ";
+    public static final String ADMIN_INSUFFICIENT_STOCK = "Số lượng tồn kho không đủ";
     public static final String CANNOT_PAY_ORDER = "Không thể thanh toán đơn hàng này";
     public static final String ORDER_ALREADY_PAID = "Đơn hàng đã được thanh toán";
     public static final String CANNOT_CANCEL_ORDER = "Không thể hủy đơn hàng này";
@@ -50,6 +57,10 @@ public final class Message {
     // Email
     public static final String EMAIL_ORDER_CONFIRM_SUBJECT = "Xác nhận đơn hàng #";
     public static final String EMAIL_CONFIRM_INTRO = "Cảm ơn bạn đã đặt hàng! Đơn hàng của bạn đã được tiếp nhận.";
+
+    // Validation — Auth
+    public static final String EMAIL_INVALID = "Email không hợp lệ";
+    public static final String PASSWORD_NOT_BLANK = "Mật khẩu không được để trống";
 
     // Validation — CreateOrder
     public static final String EMAIL_NOT_BLANK = "Email không được để trống";

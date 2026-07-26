@@ -32,9 +32,9 @@ public class CartService {
     @Transactional
     public CartItemResponse addItem(Long accountId, AddCartItemRequest request) {
         Sku sku = skuRepository.findById(request.getSkuId())
-                .orElseThrow(() -> new NoSuchElementException(Message.SKU_NOT_FOUND + request.getSkuId()));
+                .orElseThrow(() -> new NoSuchElementException(Message.USER_SKU_NOT_FOUND));
         characterDesignRepository.findById(request.getCharacterDesignId())
-                .orElseThrow(() -> new NoSuchElementException(Message.DESIGN_NOT_FOUND + request.getCharacterDesignId()));
+                .orElseThrow(() -> new NoSuchElementException(Message.USER_DESIGN_NOT_FOUND));
 
         CartItem existing = cartItemRepository
                 .findByAccountIdAndSkuIdAndCharacterDesignId(accountId, request.getSkuId(), request.getCharacterDesignId())
