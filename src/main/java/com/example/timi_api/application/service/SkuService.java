@@ -2,19 +2,17 @@ package com.example.timi_api.application.service;
 
 import com.example.timi_api.application.dto.response.SkuResponse;
 import com.example.timi_api.domain.constant.SkuQuantityLogType;
-import com.example.timi_api.domain.entity.Category;
-import com.example.timi_api.domain.entity.Order;
-import com.example.timi_api.domain.entity.Size;
-import com.example.timi_api.domain.entity.Sku;
-import com.example.timi_api.domain.entity.SkuQuantityLog;
-import com.example.timi_api.infrastructure.repository.SkuRepository;
+import com.example.timi_api.domain.entity.*;
 import com.example.timi_api.infrastructure.message.Message;
 import com.example.timi_api.infrastructure.repository.SkuQuantityLogRepository;
+import com.example.timi_api.infrastructure.repository.SkuRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -79,6 +77,11 @@ public class SkuService {
         skuRepository.save(sku);
     }
 
+    @Retryable(
+            retryFor = org.springframework.orm.ObjectOptimisticLockingFailureException.class,
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 100, multiplier = 2)
+    )
     @Transactional
     public void adjustQuantity(Long skuId, int quantity, SkuQuantityLogType type) {
         adjustQuantity(skuId, quantity, type, null);

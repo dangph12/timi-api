@@ -206,6 +206,11 @@ public class OrderService {
         return toOrderResponse(order);
     }
 
+    @Retryable(
+            retryFor = org.springframework.orm.ObjectOptimisticLockingFailureException.class,
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 100, multiplier = 2)
+    )
     @Transactional
     public OrderResponse cancelOrder(String publicId) {
         Order order = orderRepository.findByPublicId(publicId)
