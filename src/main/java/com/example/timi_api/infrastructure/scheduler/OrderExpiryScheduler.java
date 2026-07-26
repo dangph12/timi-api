@@ -1,8 +1,11 @@
 package com.example.timi_api.infrastructure.scheduler;
 
+import com.example.timi_api.application.service.SkuService;
 import com.example.timi_api.domain.constant.OrderStatus;
 import com.example.timi_api.domain.constant.PaymentStatus;
+import com.example.timi_api.domain.constant.SkuQuantityLogType;
 import com.example.timi_api.domain.entity.Order;
+import com.example.timi_api.domain.entity.OrderItem;
 import com.example.timi_api.domain.entity.OrderStatusHistory;
 import com.example.timi_api.infrastructure.message.Message;
 import com.example.timi_api.infrastructure.repository.OrderRepository;
@@ -23,6 +26,7 @@ public class OrderExpiryScheduler {
 
     private final OrderRepository orderRepository;
     private final OrderStatusHistoryRepository orderStatusHistoryRepository;
+    private final SkuService skuService;
 
     @Transactional
     @Scheduled(fixedRate = 60000)
@@ -34,6 +38,16 @@ public class OrderExpiryScheduler {
         for (Order order : expired) {
             if (order.getPaymentMethod() != null && order.getPaymentMethod().name().equals("QR")) {
                 log.info("Cancelling expired QR order {}", order.getPublicId());
+
+                for (OrderItem item : order.getItems()) {
+                    skuService.adjustQuantity(
+                            item.getSku().getId(),
+                            item.getQuantity(),
+                            SkuQuantityLogType.RESTOCK_IN,
+                            order
+                    );
+                }
+
                 order.setCurrentStatus(OrderStatus.CANCELLED);
                 orderRepository.save(order);
 
