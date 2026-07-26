@@ -11,6 +11,7 @@ import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -78,7 +79,7 @@ public class SkuService {
     }
 
     @Retryable(
-            retryFor = org.springframework.orm.ObjectOptimisticLockingFailureException.class,
+            retryFor = ObjectOptimisticLockingFailureException.class,
             maxAttempts = 3,
             backoff = @Backoff(delay = 100, multiplier = 2)
     )

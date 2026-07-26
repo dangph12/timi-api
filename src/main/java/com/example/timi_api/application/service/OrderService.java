@@ -12,6 +12,7 @@ import com.example.timi_api.infrastructure.email.EmailService;
 import com.example.timi_api.infrastructure.message.Message;
 import com.example.timi_api.infrastructure.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -41,6 +42,11 @@ public class OrderService {
     private final EmailService emailService;
     private final SkuService skuService;
 
+    @Retryable(
+            retryFor = ObjectOptimisticLockingFailureException.class,
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 100, multiplier = 2)
+    )
     @Transactional
     public OrderResponse createOrder(CreateOrder request, String idempotencyKey, Long accountId) {
         if (idempotencyKey != null) {
@@ -134,6 +140,11 @@ public class OrderService {
         return toOrderResponse(order);
     }
 
+    @Retryable(
+            retryFor = ObjectOptimisticLockingFailureException.class,
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 100, multiplier = 2)
+    )
     @Transactional
     public OrderResponse selectCodPayment(String publicId, String idempotencyKey) {
         Order order = orderRepository.findByPublicId(publicId)
@@ -209,7 +220,7 @@ public class OrderService {
     }
 
     @Retryable(
-            retryFor = org.springframework.orm.ObjectOptimisticLockingFailureException.class,
+            retryFor = ObjectOptimisticLockingFailureException.class,
             maxAttempts = 3,
             backoff = @Backoff(delay = 100, multiplier = 2)
     )
@@ -245,6 +256,11 @@ public class OrderService {
         return toOrderResponse(order);
     }
 
+    @Retryable(
+            retryFor = ObjectOptimisticLockingFailureException.class,
+            maxAttempts = 3,
+            backoff = @Backoff(delay = 100, multiplier = 2)
+    )
     @Transactional
     public OrderResponse createOrderFromCartItems(
             String email, String name, String phone, String address, String note,
