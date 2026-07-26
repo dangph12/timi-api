@@ -2,12 +2,7 @@ package com.example.timi_api.application.service;
 
 import com.example.timi_api.application.dto.request.CreateOrder;
 import com.example.timi_api.application.dto.request.CreateOrderItem;
-import com.example.timi_api.application.dto.response.CharacterDesignResponse;
-import com.example.timi_api.application.dto.response.OrderListItemResponse;
-import com.example.timi_api.application.dto.response.OrderItemResponse;
-import com.example.timi_api.application.dto.response.OrderResponse;
-import com.example.timi_api.application.dto.response.OrderStatusHistoryResponse;
-import com.example.timi_api.application.dto.response.SkuResponse;
+import com.example.timi_api.application.dto.response.*;
 import com.example.timi_api.domain.constant.OrderStatus;
 import com.example.timi_api.domain.constant.PaymentMethod;
 import com.example.timi_api.domain.constant.PaymentStatus;
@@ -17,6 +12,8 @@ import com.example.timi_api.infrastructure.email.EmailService;
 import com.example.timi_api.infrastructure.message.Message;
 import com.example.timi_api.infrastructure.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
@@ -42,6 +39,7 @@ public class OrderService {
     private final AccountRepository accountRepository;
     private final PaymentTransactionRepository paymentTransactionRepository;
     private final EmailService emailService;
+    private final SkuService skuService;
 
     @Transactional
     public OrderResponse createOrder(CreateOrder request, String idempotencyKey, Long accountId) {
@@ -52,6 +50,7 @@ public class OrderService {
             }
         }
 
+        List<Sku> skus = new java.util.ArrayList<>();
         for (CreateOrderItem item : request.getItems()) {
             Sku sku = skuRepository.findById(item.getSkuId())
                     .orElseThrow(() -> new NoSuchElementException(Message.USER_SKU_NOT_FOUND));
@@ -61,6 +60,8 @@ public class OrderService {
                 throw new IllegalArgumentException(Message.USER_INSUFFICIENT_STOCK);
             }
             sku.setQuantity(sku.getQuantity() - item.getQuantity());
+            skuRepository.save(sku);
+            skus.add(sku);
         }
 
         Account account = accountId != null
@@ -85,8 +86,9 @@ public class OrderService {
                 .build());
 
         BigDecimal total = BigDecimal.ZERO;
-        for (CreateOrderItem item : request.getItems()) {
-            Sku sku = skuRepository.getReferenceById(item.getSkuId());
+        for (int i = 0; i < request.getItems().size(); i++) {
+            CreateOrderItem item = request.getItems().get(i);
+            Sku sku = skus.get(i);
             CharacterDesign design = characterDesignRepository.getReferenceById(item.getCharacterDesignId());
 
             skuQuantityLogRepository.save(SkuQuantityLog.builder()
@@ -134,7 +136,7 @@ public class OrderService {
 
     @Transactional
     public OrderResponse selectCodPayment(String publicId, String idempotencyKey) {
-        Order order = orderRepository.findByPublicIdForUpdate(publicId)
+        Order order = orderRepository.findByPublicId(publicId)
                 .orElseThrow(() -> new NoSuchElementException(Message.NOT_FOUND));
 
         if (order.getCurrentStatus() == OrderStatus.CANCELLED
@@ -222,20 +224,12 @@ public class OrderService {
         }
 
         for (OrderItem item : order.getItems()) {
-            Sku sku = item.getSku();
-            int oldQuantity = sku.getQuantity();
-            int newQuantity = oldQuantity + item.getQuantity();
-            sku.setQuantity(newQuantity);
-            skuRepository.save(sku);
-
-            skuQuantityLogRepository.save(SkuQuantityLog.builder()
-                    .sku(sku)
-                    .order(order)
-                    .oldQuantity(oldQuantity)
-                    .newQuantity(newQuantity)
-                    .changeAmount(item.getQuantity())
-                    .logType(SkuQuantityLogType.RESTOCK_IN)
-                    .build());
+            skuService.adjustQuantity(
+                    item.getSku().getId(),
+                    item.getQuantity(),
+                    SkuQuantityLogType.RESTOCK_IN,
+                    order
+            );
         }
 
         order.setCurrentStatus(OrderStatus.CANCELLED);
@@ -263,6 +257,7 @@ public class OrderService {
                 throw new IllegalArgumentException(Message.USER_INSUFFICIENT_STOCK);
             }
             sku.setQuantity(sku.getQuantity() - cartItem.getQuantity());
+            skuRepository.save(sku);
             skus.add(sku);
         }
 

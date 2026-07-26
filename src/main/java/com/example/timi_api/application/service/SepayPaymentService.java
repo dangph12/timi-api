@@ -76,7 +76,7 @@ public class SepayPaymentService {
             BigDecimal amount = new BigDecimal(root.get("transferAmount").asText());
             String referenceCode = root.get("referenceCode").asText();
 
-            Optional<Order> orderOpt = orderRepository.findByPublicIdForUpdate(content);
+            Optional<Order> orderOpt = orderRepository.findByPublicId(content);
             if (orderOpt.isEmpty()) {
                 log.warn("No order found for content: {}", content);
                 return;

@@ -15,10 +15,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     Optional<Order> findByPublicId(String publicId);
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("select o from Order o where o.publicId = :publicId")
-    Optional<Order> findByPublicIdForUpdate(@Param("publicId") String publicId);
-
     Optional<Order> findByIdempotencyKey(String idempotencyKey);
 
     boolean existsByPublicId(String publicId);
