@@ -7,7 +7,6 @@ import com.example.timi_api.infrastructure.message.Message;
 import com.example.timi_api.infrastructure.repository.SkuQuantityLogRepository;
 import com.example.timi_api.infrastructure.repository.SkuRepository;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,9 +24,7 @@ import java.util.NoSuchElementException;
 public class SkuService {
     private final SkuRepository skuRepository;
     private final SkuQuantityLogRepository skuQuantityLogRepository;
-
-    @PersistenceContext
-    private EntityManager entityManager;
+    private final EntityManager entityManager;
 
     @Transactional
     public SkuResponse createSku(String skuCode, Long categoryId, Long sizeId, BigDecimal price, Integer quantity) {
@@ -51,6 +48,10 @@ public class SkuService {
         sku.setPrice(price);
     }
 
+    @Retryable(
+            retryFor = ObjectOptimisticLockingFailureException.class,
+            backoff = @Backoff(delay = 100, multiplier = 2)
+    )
     @Transactional
     public void adjustQuantity(Long skuId, int quantity, SkuQuantityLogType type, Order order) {
         Sku sku = skuRepository.findById(skuId)
@@ -76,16 +77,6 @@ public class SkuService {
                 .build());
 
         skuRepository.save(sku);
-    }
-
-    @Retryable(
-            retryFor = ObjectOptimisticLockingFailureException.class,
-            maxAttempts = 3,
-            backoff = @Backoff(delay = 100, multiplier = 2)
-    )
-    @Transactional
-    public void adjustQuantity(Long skuId, int quantity, SkuQuantityLogType type) {
-        adjustQuantity(skuId, quantity, type, null);
     }
 
     @Transactional

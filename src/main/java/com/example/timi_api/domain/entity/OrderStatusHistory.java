@@ -28,6 +28,7 @@ public class OrderStatusHistory {
     private OrderStatus status;
 
     @Column(nullable = false)
+    @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 
     private String note;

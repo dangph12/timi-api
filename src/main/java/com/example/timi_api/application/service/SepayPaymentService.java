@@ -72,9 +72,9 @@ public class SepayPaymentService {
         try {
             JsonNode root = objectMapper.readTree(payload);
 
-            String content = root.get("content").asText();
-            BigDecimal amount = new BigDecimal(root.get("transferAmount").asText());
-            String referenceCode = root.get("referenceCode").asText();
+            String content = root.get("content").asString();
+            BigDecimal amount = new BigDecimal(root.get("transferAmount").asString());
+            String referenceCode = root.get("referenceCode").asString();
 
             Optional<Order> orderOpt = orderRepository.findByPublicId(content);
             if (orderOpt.isEmpty()) {

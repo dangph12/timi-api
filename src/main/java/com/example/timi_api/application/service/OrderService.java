@@ -44,7 +44,6 @@ public class OrderService {
 
     @Retryable(
             retryFor = ObjectOptimisticLockingFailureException.class,
-            maxAttempts = 3,
             backoff = @Backoff(delay = 100, multiplier = 2)
     )
     @Transactional
@@ -142,7 +141,6 @@ public class OrderService {
 
     @Retryable(
             retryFor = ObjectOptimisticLockingFailureException.class,
-            maxAttempts = 3,
             backoff = @Backoff(delay = 100, multiplier = 2)
     )
     @Transactional
@@ -221,7 +219,6 @@ public class OrderService {
 
     @Retryable(
             retryFor = ObjectOptimisticLockingFailureException.class,
-            maxAttempts = 3,
             backoff = @Backoff(delay = 100, multiplier = 2)
     )
     @Transactional
@@ -258,7 +255,6 @@ public class OrderService {
 
     @Retryable(
             retryFor = ObjectOptimisticLockingFailureException.class,
-            maxAttempts = 3,
             backoff = @Backoff(delay = 100, multiplier = 2)
     )
     @Transactional

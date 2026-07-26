@@ -56,7 +56,7 @@ public class CartService {
 
         CartItem item = cartItemRepository.save(CartItem.builder()
                 .account(account)
-                .sku(skuRepository.getReferenceById(request.getSkuId()))
+                .sku(sku)
                 .characterDesign(characterDesignRepository.getReferenceById(request.getCharacterDesignId()))
                 .quantity(request.getQuantity())
                 .build());
