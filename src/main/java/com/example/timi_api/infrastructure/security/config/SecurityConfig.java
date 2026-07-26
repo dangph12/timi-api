@@ -1,7 +1,5 @@
 package com.example.timi_api.infrastructure.security.config;
 
-import java.util.List;
-
 import com.example.timi_api.infrastructure.security.jwt.JwtAuthenticationFilter;
 import com.example.timi_api.infrastructure.security.oauth2.OAuth2SuccessHandler;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +14,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity

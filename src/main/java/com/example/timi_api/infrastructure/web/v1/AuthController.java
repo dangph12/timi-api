@@ -8,7 +8,6 @@ import com.example.timi_api.application.service.AuthService;
 import com.example.timi_api.application.service.AuthService.AuthResult;
 import com.example.timi_api.infrastructure.common.ApiResponse;
 import com.example.timi_api.infrastructure.message.Message;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
