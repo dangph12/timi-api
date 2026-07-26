@@ -18,7 +18,7 @@ public class SkuQuantityLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sku_id", nullable = false)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
