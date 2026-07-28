@@ -1,0 +1,69 @@
+name: Build Native Image and Deploy to Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  PROJECT_ID: 'timi-502609'
+  REGION: 'us-central1'
+  REPO_NAME: 'timi-api'
+  IMAGE_NAME: 'timi-spring-app'
+  SERVICE_NAME: 'timi-spring-service'
+
+permissions:
+  contents: 'read'
+  id-token: 'write'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: 'projects/99660507044/locations/global/workloadIdentityPools/github-pool/providers/github-provider'
+          service_account: 'github-service@timi-502609.iam.gserviceaccount.com'
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Prepare Environment Variables
+        id: env
+        run: |
+          ENV_ARGS="TZ=Asia/Ho_Chi_Minh"
+          if [ -n "${{ secrets.ENV_FILE }}" ]; then
+            while IFS='=' read -r key value; do
+              [ -z "$key" ] && continue
+              [ -z "$value" ] && continue
+              ENV_ARGS="$ENV_ARGS,$key=$value"
+            done <<< "${{ secrets.ENV_FILE }}"
+          fi
+          echo "ENV_ARGS=$ENV_ARGS" >> $GITHUB_OUTPUT
+
+      - name: Build GraalVM Native Docker Image (Gradle)
+        run: ./gradlew bootBuildImage --imageName=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }} -Djib.container.environment=${{ steps.env.outputs.ENV_ARGS }}
+
+      - name: Push the Docker Image
+        run: |
+          docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: ${{ env.SERVICE_NAME }}
+          region: ${{ env.REGION }}
+          image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          flags: '--allow-unauthenticated --memory=512Mi --min-instances=0 --max-instances=1'
