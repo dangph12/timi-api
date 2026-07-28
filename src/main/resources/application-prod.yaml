@@ -1,6 +1,7 @@
 server:
   forward-headers-strategy: native
-
+  port: ${PORT:8080}
+  
 spring:
   jpa:
     properties:
