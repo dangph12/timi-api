@@ -53,6 +53,9 @@ jobs:
           fi
           echo "ENV_ARGS=$ENV_ARGS" >> $GITHUB_OUTPUT
 
+      - name: Make Gradle Executable
+        run: chmod +x ./gradlew
+
       - name: Build GraalVM Native Docker Image (Gradle)
         run: ./gradlew bootBuildImage --imageName=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO_NAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }} -Djib.container.environment=${{ steps.env.outputs.ENV_ARGS }}
 
